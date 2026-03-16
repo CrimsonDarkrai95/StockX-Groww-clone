@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>API Tester — Global Stocks Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0b0e14;
+    --surface:   #111620;
+    --border:    #1e2535;
+    --accent:    #00e5a0;
+    --accent2:   #0090ff;
+    --danger:    #ff4d6d;
+    --warn:      #f5a623;
+    --text:      #c9d1e0;
+    --muted:     #556070;
+    --head:      #ffffff;
+    --mono:      'JetBrains Mono', monospace;
+    --sans:      'Syne', sans-serif;
+    --radius:    6px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11,14,20,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .logo {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--head);
+    letter-spacing: .04em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50% { opacity:.5; transform:scale(.8); }
+  }
+  .base-url {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 5px 10px;
+  }
+  .token-status {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    transition: all .3s;
+  }
+  .token-status.active { color: var(--accent); border-color: var(--accent); }
+  .token-status.active::before { content: '● '; }
+  .token-status:not(.active)::before { content: '○ '; }
+
+  /* ── Layout ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 0;
+  }
+
+  /* ── Sidebar nav ── */
+  nav {
+    position: sticky;
+    top: 53px;
+    height: calc(100vh - 53px);
+    overflow-y: auto;
+    padding: 24px 0;
+    border-right: 1px solid var(--border);
+  }
+  nav::-webkit-scrollbar { width: 3px; }
+  nav::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .nav-group { margin-bottom: 8px; }
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 20px 4px;
+  }
+  nav a {
+    display: block;
+    padding: 7px 20px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 2px solid transparent;
+    transition: all .15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  nav a:hover { color: var(--head); border-left-color: var(--border); background: rgba(255,255,255,.02); }
+  nav a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,229,160,.04); }
+
+  /* ── Main content ── */
+  main { padding: 32px 36px; }
+
+  /* ── Section card ── */
+  .section {
+    margin-bottom: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    scroll-margin-top: 70px;
+  }
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-head:hover { background: rgba(255,255,255,.02); }
+
+  .method-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 4px;
+    letter-spacing: .05em;
+    min-width: 44px;
+    text-align: center;
+  }
+  .get  { background: rgba(0,144,255,.15); color: var(--accent2); border: 1px solid rgba(0,144,255,.3); }
+  .post { background: rgba(0,229,160,.12); color: var(--accent);  border: 1px solid rgba(0,229,160,.25); }
+  .del  { background: rgba(255,77,109,.12); color: var(--danger); border: 1px solid rgba(255,77,109,.25); }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--head);
+    font-weight: 400;
+  }
+  .section-desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .chevron {
+    margin-left: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    transition: transform .2s;
+  }
+  .section.collapsed .chevron { transform: rotate(-90deg); }
+  .section.collapsed .section-body { display: none; }
+
+  .section-body { padding: 20px; }
+
+  /* ── Form ── */
+  .fields { display: grid; gap: 12px; margin-bottom: 16px; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .05em;
+  }
+  .field input, .field select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color .15s;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--muted); }
+  .field select option { background: var(--surface); }
+
+  .fields-row { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+  /* ── Button ── */
+  .btn {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 20px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #00ffb3; transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: #ff6b85; }
+  .btn.loading { opacity: .6; pointer-events: none; }
+
+  /* ── Response ── */
+  .response-wrap { margin-top: 16px; }
+  .response-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .status-pill {
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .s2xx { background: rgba(0,229,160,.15); color: var(--accent); }
+  .s4xx { background: rgba(245,166,35,.15); color: var(--warn); }
+  .s5xx { background: rgba(255,77,109,.15); color: var(--danger); }
+
+  .response-time { color: var(--muted); }
+
+  pre.response-body {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text);
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  pre.response-body::-webkit-scrollbar { width: 4px; height: 4px; }
+  pre.response-body::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* JSON syntax highlight */
+  .j-key    { color: #7ec8e3; }
+  .j-str    { color: #a8d8a8; }
+  .j-num    { color: #f5a623; }
+  .j-bool   { color: #ff9f7f; }
+  .j-null   { color: var(--muted); }
+
+  /* ── Token banner ── */
+  .token-banner {
+    background: rgba(0,229,160,.06);
+    border: 1px solid rgba(0,229,160,.2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .token-banner span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .clear-token {
+    background: none;
+    border: 1px solid rgba(255,77,109,.4);
+    color: var(--danger);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all .15s;
+  }
+  .clear-token:hover { background: rgba(255,77,109,.1); }
+  #token-banner-wrap { display: none; }
+
+  /* ── Divider ── */
+  .page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--head);
+    margin-bottom: 6px;
+  }
+  .page-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 28px;
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    Global Stocks — API Tester
+  </div>
+  <div class="base-url">http://localhost:3000</div>
+  <div class="token-status" id="tokenStatus">No token</div>
+</header>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <nav>
+    <div class="nav-group">
+      <div class="nav-label">Auth</div>
+      <a href="#register">Register</a>
+      <a href="#login">Login</a>
+      <a href="#refresh-token">Refresh Token</a>
+      <a href="#logout">Logout</a>
+      <a href="#refresh-after-logout">Revoked Token Test</a>
+      <a href="#me">Get Me</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Wallet</div>
+      <a href="#deposit">Deposit</a>
+      <a href="#withdraw">Withdraw</a>
+      <a href="#balance">Balance</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Stocks</div>
+      <a href="#stocks-list">List Stocks</a>
+      <a href="#stock-detail">Stock Detail</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Orders</div>
+      <a href="#place-order">Place Order</a>
+      <a href="#order-history">History</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Portfolio</div>
+      <a href="#portfolio">Portfolio</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Watchlist</div>
+      <a href="#watchlist-add">Add</a>
+      <a href="#watchlist-get">Get</a>
+      <a href="#watchlist-remove">Remove</a>
+    </div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <main>
+    <div class="page-title">API Tester</div>
+    <div class="page-sub">Base URL: http://localhost:3000 &nbsp;·&nbsp; Token auto-attached to all protected routes</div>
+
+    <!-- Token banner -->
+    <div id="token-banner-wrap">
+      <div class="token-banner">
+        <span id="token-preview"></span>
+        <button class="clear-token" onclick="clearToken()">Clear token</button>
+      </div>
+    </div>
+
+    <!-- 1. Register -->
+    <div class="section" id="register">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/auth/register</span>
+        <span class="section-desc">Create account</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields fields-row">
+          <div class="field"><label>EMAIL</label><input id="reg-email" type="email" placeholder="user@example.com" /></div>
+          <div class="field"><label>PASSWORD</label><input id="reg-pass" type="password" placeholder="••••••••" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="doRegister()">Send →</button>
+        <div class="response-wrap" id="res-register"></div>
+      </div>
+    </div>
+
+    <!-- 2. Login -->
+    <div class="section" id="login">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/auth/login</span>
+        <span class="section-desc">Login → saves token</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields fields-row">
+          <div class="field"><label>EMAIL</label><input id="login-email" type="email" placeholder="user@example.com" /></div>
+          <div class="field"><label>PASSWORD</label><input id="login-pass" type="password" placeholder="••••••••" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="doLogin()">Send →</button>
+        <div class="response-wrap" id="res-login"></div>
+      </div>
+    </div>
+
+    <!-- Refresh Token -->
+    <div class="section" id="refresh-token">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/auth/refresh</span>
+        <span class="section-desc">Get new access token using refresh token</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+          Uses the refresh token saved from login automatically.
+          Run this after login to get a fresh access token.
+        </p>
+        <button class="btn btn-primary" onclick="doRefresh()">Send →</button>
+        <div class="response-wrap" id="res-refresh"></div>
+      </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="section" id="logout">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/auth/logout</span>
+        <span class="section-desc">Revoke refresh token · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+          Revokes the current refresh token in the database
+          and clears all saved tokens from localStorage.
+        </p>
+        <button class="btn btn-danger" onclick="doLogout()">Send →</button>
+        <div class="response-wrap" id="res-logout"></div>
+      </div>
+    </div>
+
+    <!-- Revoked Token Test -->
+    <div class="section" id="refresh-after-logout">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/auth/refresh (revoked)</span>
+        <span class="section-desc">Must return 401 after logout</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+          Paste the refresh token you used BEFORE logging out.
+          This must return 401. If it returns a new token, logout is broken.
+        </p>
+        <div class="fields" style="max-width:500px">
+          <div class="field">
+            <label>REVOKED REFRESH TOKEN</label>
+            <input id="revoked-token" 
+              placeholder="Paste the refresh token from before logout" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="doRefreshAfterLogout()">
+          Send →
+        </button>
+        <div class="response-wrap" id="res-refresh-after-logout"></div>
+      </div>
+    </div>
+
+    <!-- 3. Get Me -->
+    <div class="section" id="me">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge get">GET</span>
+        <span class="section-title">/api/auth/me</span>
+        <span class="section-desc">Current user info · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <button class="btn btn-primary" onclick="doGetMe()">Send →</button>
+        <div class="response-wrap" id="res-me"></div>
+      </div>
+    </div>
+
+    <!-- 4. Deposit -->
+    <div class="section" id="deposit">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/wallet/deposit</span>
+        <span class="section-desc">Add funds · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields" style="max-width:260px">
+          <div class="field"><label>AMOUNT</label><input id="dep-amount" type="number" min="0" step="0.01" placeholder="1000.00" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="doDeposit()">Send →</button>
+        <div class="response-wrap" id="res-deposit"></div>
+      </div>
+    </div>
+
+    <!-- 5. Withdraw -->
+    <div class="section" id="withdraw">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/wallet/withdraw</span>
+        <span class="section-desc">Withdraw funds · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields" style="max-width:260px">
+          <div class="field"><label>AMOUNT</label><input id="wd-amount" type="number" min="0" step="0.01" placeholder="500.00" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="doWithdraw()">Send →</button>
+        <div class="response-wrap" id="res-withdraw"></div>
+      </div>
+    </div>
+
+    <!-- 6. Wallet Balance -->
+    <div class="section" id="balance">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge get">GET</span>
+        <span class="section-title">/api/wallet/balance</span>
+        <span class="section-desc">Current balance · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <button class="btn btn-primary" onclick="doBalance()">Send →</button>
+        <div class="response-wrap" id="res-balance"></div>
+      </div>
+    </div>
+
+    <!-- 7. List Stocks -->
+    <div class="section" id="stocks-list">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge get">GET</span>
+        <span class="section-title">/api/stocks</span>
+        <span class="section-desc">List + filter stocks</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields fields-row">
+          <div class="field"><label>SEARCH (optional)</label><input id="stocks-search" placeholder="RELIANCE, Apple…" /></div>
+          <div class="field">
+            <label>EXCHANGE (optional)</label>
+            <select id="stocks-exchange">
+              <option value="">All exchanges</option>
+              <option value="NSE">NSE</option>
+              <option value="BSE">BSE</option>
+              <option value="NYSE">NYSE</option>
+              <option value="NASDAQ">NASDAQ</option>
+              <option value="LSE">LSE</option>
+              <option value="SGX">SGX</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>SECTOR (optional)</label>
+            <input id="stocks-sector" placeholder="Technology, Banking…" />
+          </div>
+          <div class="field">
+            <label>PAGE</label>
+            <input id="stocks-page" type="number" value="1" min="1" />
+          </div>
+          <div class="field">
+            <label>LIMIT</label>
+            <input id="stocks-limit" type="number" value="20" min="1" max="100" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="doListStocks()">Send →</button>
+        <div class="response-wrap" id="res-stocks-list"></div>
+      </div>
+    </div>
+
+    <!-- 8. Stock Detail -->
+    <div class="section" id="stock-detail">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge get">GET</span>
+        <span class="section-title">/api/stocks/:symbol</span>
+        <span class="section-desc">Single stock by symbol</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields" style="max-width:260px">
+          <div class="field"><label>SYMBOL</label><input id="stock-symbol" placeholder="RELIANCE" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="doStockDetail()">Send →</button>
+        <div class="response-wrap" id="res-stock-detail"></div>
+      </div>
+    </div>
+
+    <!-- 9. Place Order -->
+    <div class="section" id="place-order">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/orders</span>
+        <span class="section-desc">Place order · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields fields-row">
+          <div class="field"><label>STOCK ID (UUID)</label><input id="order-stockId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" /></div>
+          <div class="field">
+            <label>ORDER TYPE</label>
+            <select id="order-type">
+              <option value="market">market</option>
+              <option value="limit">limit</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>SIDE</label>
+            <select id="order-side">
+              <option value="buy">buy</option>
+              <option value="sell">sell</option>
+            </select>
+          </div>
+          <div class="field"><label>QUANTITY</label><input id="order-qty" type="number" min="0" step="0.00000001" placeholder="1" /></div>
+          <div class="field"><label>LIMIT PRICE (limit orders only)</label><input id="order-limit" type="number" min="0" step="0.01" placeholder="Leave blank for market" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="doPlaceOrder()">Send →</button>
+        <div class="response-wrap" id="res-place-order"></div>
+      </div>
+    </div>
+
+    <!-- 10. Order History -->
+    <div class="section" id="order-history">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge get">GET</span>
+        <span class="section-title">/api/orders/history</span>
+        <span class="section-desc">Order history · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <button class="btn btn-primary" onclick="doOrderHistory()">Send →</button>
+        <div class="response-wrap" id="res-order-history"></div>
+      </div>
+    </div>
+
+    <!-- 11. Portfolio -->
+    <div class="section" id="portfolio">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge get">GET</span>
+        <span class="section-title">/api/portfolio</span>
+        <span class="section-desc">Holdings · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <button class="btn btn-primary" onclick="doPortfolio()">Send →</button>
+        <div class="response-wrap" id="res-portfolio"></div>
+      </div>
+    </div>
+
+    <!-- 12. Add to Watchlist -->
+    <div class="section" id="watchlist-add">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge post">POST</span>
+        <span class="section-title">/api/watchlist</span>
+        <span class="section-desc">Add stock · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields" style="max-width:440px">
+          <div class="field"><label>STOCK ID (UUID)</label><input id="wl-add-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" /></div>
+        </div>
+        <button class="btn btn-primary" onclick="doWatchlistAdd()">Send →</button>
+        <div class="response-wrap" id="res-watchlist-add"></div>
+      </div>
+    </div>
+
+    <!-- 13. Get Watchlist -->
+    <div class="section" id="watchlist-get">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge get">GET</span>
+        <span class="section-title">/api/watchlist</span>
+        <span class="section-desc">Get watchlist · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <button class="btn btn-primary" onclick="doWatchlistGet()">Send →</button>
+        <div class="response-wrap" id="res-watchlist-get"></div>
+      </div>
+    </div>
+
+    <!-- 14. Remove from Watchlist -->
+    <div class="section" id="watchlist-remove">
+      <div class="section-head" onclick="toggleSection(this)">
+        <span class="method-badge del">DELETE</span>
+        <span class="section-title">/api/watchlist/:stockId</span>
+        <span class="section-desc">Remove stock · 🔒 protected</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="fields" style="max-width:440px">
+          <div class="field"><label>STOCK ID (UUID)</label><input id="wl-rm-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" /></div>
+        </div>
+        <button class="btn btn-danger" onclick="doWatchlistRemove()">Send →</button>
+        <div class="response-wrap" id="res-watchlist-remove"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  const BASE = 'http://localhost:3000';
+
+  // ── Token helpers ──────────────────────────────────────────────────────────
+  function getToken() { return localStorage.getItem('gsp_token'); }
+
+  function saveToken(t, rt, uid) {
+  localStorage.setItem('gsp_token', t);
+  if (rt) localStorage.setItem('gsp_refresh', rt);
+  if (uid) localStorage.setItem('gsp_user_id', uid);
+  updateTokenUI();
+}
+
+  function getRefreshToken() {
+    return localStorage.getItem('gsp_refresh');
+  }
+
+  function clearToken() {
+    localStorage.removeItem('gsp_token');
+    updateTokenUI();
+  }
+
+  function updateTokenUI() {
+    const t = getToken();
+    const status = document.getElementById('tokenStatus');
+    const banner = document.getElementById('token-banner-wrap');
+    const preview = document.getElementById('token-preview');
+    if (t) {
+      status.textContent = 'Token saved';
+      status.classList.add('active');
+      banner.style.display = 'block';
+      preview.textContent = '🔑 ' + t.slice(0, 40) + '…';
+    } else {
+      status.textContent = 'No token';
+      status.classList.remove('active');
+      banner.style.display = 'none';
+    }
+  }
+
+  // ── Request helper ─────────────────────────────────────────────────────────
+  async function call(method, path, body, targetId, btnEl) {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getToken();
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    if (btnEl) { btnEl.classList.add('loading'); btnEl.textContent = 'Sending…'; }
+
+    const t0 = Date.now();
+    let status, json;
+    try {
+      const opts = { method, headers };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(BASE + path, opts);
+      status = res.status;
+      const rawText = await res.text();
+      try { json = rawText ? JSON.parse(rawText) : { message: '(empty response)' }; } catch { json = { raw: rawText }; }
+    } catch (err) {
+      status = 0;
+      json = { error: 'Network error: ' + err.message };
+    }
+    const ms = Date.now() - t0;
+
+    renderResponse(targetId, status, json, ms);
+    if (btnEl) { btnEl.classList.remove('loading'); btnEl.textContent = 'Send →'; }
+    return { status, json };
+  }
+
+  // ── Response renderer ──────────────────────────────────────────────────────
+  function renderResponse(targetId, status, json, ms) {
+    const wrap = document.getElementById(targetId);
+    const cls = status >= 500 ? 's5xx' : status >= 400 ? 's4xx' : 's2xx';
+    const label = status === 0 ? 'ERR' : status;
+    wrap.innerHTML = `
+      <div class="response-header">
+        <span class="status-pill ${cls}">${label}</span>
+        <span class="response-time">${ms}ms</span>
+      </div>
+      <pre class="response-body">${highlight(JSON.stringify(json, null, 2))}</pre>
+    `;
+  }
+
+  function highlight(str) {
+    return str
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (m) => {
+        if (/^"/.test(m)) {
+          if (/:$/.test(m)) return `<span class="j-key">${m}</span>`;
+          return `<span class="j-str">${m}</span>`;
+        }
+        if (/true|false/.test(m)) return `<span class="j-bool">${m}</span>`;
+        if (/null/.test(m)) return `<span class="j-null">${m}</span>`;
+        return `<span class="j-num">${m}</span>`;
+      });
+  }
+
+  // ── Section collapse ───────────────────────────────────────────────────────
+  function toggleSection(headEl) {
+    headEl.closest('.section').classList.toggle('collapsed');
+  }
+
+  // ── Sidebar active link on scroll ─────────────────────────────────────────
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', () => {
+    let cur = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 100) cur = s.id; });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + cur);
+    });
+  }, { passive: true });
+
+  // ── 1. Register ────────────────────────────────────────────────────────────
+  async function doRegister() {
+    const btn = event.target;
+    const { json } = await call('POST', '/api/auth/register', {
+      email: v('reg-email'),
+      password: v('reg-pass'),
+    }, 'res-register', btn);
+    const token = json?.data?.accessToken || json?.data?.token;
+    const refresh = json?.data?.refreshToken;
+    if (token) saveToken(token, refresh, json?.data?.user?.id);
+  }
+
+  // ── 2. Login ───────────────────────────────────────────────────────────────
+  async function doLogin() {
+    const btn = event.target;
+    const { json } = await call('POST', '/api/auth/login', {
+      email: v('login-email'),
+      password: v('login-pass'),
+    }, 'res-login', btn);
+    const token = json?.data?.accessToken || json?.data?.token || json?.token;
+    const refresh = json?.data?.refreshToken;
+    if (token) saveToken(token, refresh, json?.data?.user?.id);
+  }
+
+  // ── 3. Get Me ──────────────────────────────────────────────────────────────
+  async function doGetMe() {
+    await call('GET', '/api/auth/me', null, 'res-me', event.target);
+  }
+
+  // ── 4. Deposit ─────────────────────────────────────────────────────────────
+  async function doDeposit() {
+    await call('POST', '/api/wallet/deposit', { amount: num('dep-amount') }, 'res-deposit', event.target);
+  }
+
+  // ── 5. Withdraw ────────────────────────────────────────────────────────────
+  async function doWithdraw() {
+    await call('POST', '/api/wallet/withdraw', { amount: num('wd-amount') }, 'res-withdraw', event.target);
+  }
+
+  // ── 6. Balance ─────────────────────────────────────────────────────────────
+  async function doBalance() {
+    await call('GET', '/api/wallet/balance', null, 'res-balance', event.target);
+  }
+
+  // ── 7. List Stocks ─────────────────────────────────────────────────────────
+  async function doListStocks() {
+    const search   = v('stocks-search');
+    const exchange = v('stocks-exchange');
+    const sector   = v('stocks-sector');
+    const page     = v('stocks-page') || '1';
+    const limit    = v('stocks-limit') || '20';
+    const params   = new URLSearchParams();
+    if (search)   params.set('search', search);
+    if (exchange) params.set('exchange', exchange);
+    if (sector)   params.set('sector', sector);
+    params.set('page', page);
+    params.set('limit', limit);
+    await call(
+      'GET', '/api/stocks?' + params.toString(),
+      null, 'res-stocks-list', event.target
+    );
+  }
+
+  // ── 8. Stock Detail ────────────────────────────────────────────────────────
+  async function doStockDetail() {
+    const sym = v('stock-symbol').trim();
+    if (!sym) return alert('Enter a symbol');
+    await call('GET', '/api/stocks/' + encodeURIComponent(sym), null, 'res-stock-detail', event.target);
+  }
+
+  // ── 9. Place Order ─────────────────────────────────────────────────────────
+  async function doPlaceOrder() {
+    const body = {
+      stockId:   v('order-stockId').trim(),
+      orderType: v('order-type'),
+      side:      v('order-side'),
+      quantity:  num('order-qty'),
+    };
+    const lp = num('order-limit');
+    if (lp) body.limitPrice = lp;
+    await call('POST', '/api/orders', body, 'res-place-order', event.target);
+  }
+
+  // ── 10. Order History ──────────────────────────────────────────────────────
+  async function doOrderHistory() {
+    await call('GET', '/api/orders/history', null, 'res-order-history', event.target);
+  }
+
+  // ── 11. Portfolio ──────────────────────────────────────────────────────────
+  async function doPortfolio() {
+    const { json } = await call(
+      'GET', '/api/portfolio',
+      null, 'res-portfolio', event.target
+    );
+
+    // P&L checker — runs after response renders
+    if (!json?.data) return;
+
+    const checks = [];
+    const d = json.data;
+
+    // Check fx_rates_used exists
+    checks.push({
+      label: 'fx_rates_used present',
+      pass: !!d.fx_rates_used,
+      value: d.fx_rates_used 
+        ? JSON.stringify(d.fx_rates_used) 
+        : 'MISSING'
+    });
+
+    // Check expected FX rates
+    const fx = d.fx_rates_used || {};
+    checks.push({
+      label: 'FX rates correct',
+      pass: fx.INR === 1.0 && fx.USD === 83.5 
+            && fx.SGD === 62.0 && fx.GBP === 106.0,
+      value: `INR:${fx.INR} USD:${fx.USD} SGD:${fx.SGD} GBP:${fx.GBP}`
+    });
+
+    // Check holdings have converted fields
+    const holdings = d.holdings || d.portfolio?.holdings || [];
+    if (holdings.length > 0) {
+      const h = holdings[0];
+      const fields = [
+        'convertedCurrentValue',
+        'convertedInvestedValue',
+        'convertedPnl',
+        'convertedPnlPct',
+        'displayCurrency'
+      ];
+      fields.forEach(f => {
+        checks.push({
+          label: `holding.${f}`,
+          pass: h[f] !== undefined && h[f] !== null,
+          value: h[f] !== undefined ? String(h[f]) : 'MISSING'
+        });
+      });
+    } else {
+      checks.push({
+        label: 'holdings',
+        pass: false,
+        value: 'No holdings found — place a buy order first'
+      });
+    }
+
+    // Check summary totals exist
+    const summary = ['totalCurrentValue','totalInvestedValue',
+                     'totalPnl','totalPnlPct'];
+    summary.forEach(f => {
+      const val = d[f] ?? d.summary?.[f];
+      checks.push({
+        label: `summary.${f}`,
+        pass: val !== undefined && val !== null,
+        value: val !== undefined ? String(val) : 'MISSING'
+      });
+    });
+
+    // Render checker table
+    const rows = checks.map(c => `
+      <tr>
+        <td style="padding:6px 10px;color:${c.pass 
+          ? 'var(--accent)' : 'var(--danger)'}">
+          ${c.pass ? '✓' : '✗'}
+        </td>
+        <td style="padding:6px 10px;font-family:var(--mono);
+          font-size:11px;color:var(--text)">${c.label}</td>
+        <td style="padding:6px 10px;font-family:var(--mono);
+          font-size:11px;color:var(--muted)">${c.value}</td>
+      </tr>
+    `).join('');
+
+    const allPass = checks.every(c => c.pass);
+    const checker = document.createElement('div');
+    checker.style.cssText = `margin-top:16px;border:1px solid ${allPass 
+      ? 'rgba(0,229,160,.3)' 
+      : 'rgba(255,77,109,.3)'};border-radius:6px;overflow:hidden`;
+    checker.innerHTML = `
+      <div style="padding:10px 14px;background:${allPass 
+        ? 'rgba(0,229,160,.08)' 
+        : 'rgba(255,77,109,.08)'};
+        font-size:12px;font-weight:600;color:${allPass 
+          ? 'var(--accent)' 
+          : 'var(--danger)'}">
+        ${allPass 
+          ? '✓ All P&L fields present' 
+          : '✗ Some P&L fields missing'}
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        ${rows}
+      </table>
+    `;
+    document.getElementById('res-portfolio').appendChild(checker);
+  }
+
+  async function doRefresh() {
+  const rt = getRefreshToken();
+  const uid = localStorage.getItem('gsp_user_id');
+  if (!rt) return alert('No refresh token found. Login first.');
+  const { json } = await call(
+    'POST', '/api/auth/refresh',
+    { refreshToken: rt, userId: uid },
+    'res-refresh', event.target
+  );
+  const newToken = json?.data?.accessToken;
+  if (newToken) {
+    localStorage.setItem('gsp_token', newToken);
+    updateTokenUI();
+  }
+}
+
+  async function doLogout() {
+  const rt = getRefreshToken();
+  if (!rt) return alert('No refresh token found. Login first.');
+  await call('POST', '/api/auth/logout',
+    { refreshToken: rt },
+    'res-logout', event.target
+  );
+  clearToken();
+  localStorage.removeItem('gsp_refresh');
+  localStorage.removeItem('gsp_user_id'); // ← add this
+}
+
+
+  async function doRefreshAfterLogout() {
+  const rt = v('revoked-token').trim();
+  const uid = localStorage.getItem('gsp_user_id');
+  if (!rt) return alert('Paste the revoked refresh token first.');
+  await call(
+    'POST', '/api/auth/refresh',
+    { refreshToken: rt, userId: uid },
+    'res-refresh-after-logout', event.target
+  );
+}
+
+  // ── 12. Add to Watchlist ───────────────────────────────────────────────────
+  async function doWatchlistAdd() {
+    await call('POST', '/api/watchlist', { stockId: v('wl-add-id').trim() }, 'res-watchlist-add', event.target);
+  }
+
+  // ── 13. Get Watchlist ──────────────────────────────────────────────────────
+  async function doWatchlistGet() {
+    await call('GET', '/api/watchlist', null, 'res-watchlist-get', event.target);
+  }
+
+  // ── 14. Remove from Watchlist ──────────────────────────────────────────────
+  async function doWatchlistRemove() {
+    const id = v('wl-rm-id').trim();
+    if (!id) return alert('Enter a stock ID');
+    await call('DELETE', '/api/watchlist/' + encodeURIComponent(id), null, 'res-watchlist-remove', event.target);
+  }
+
+  // ── Tiny helpers ───────────────────────────────────────────────────────────
+  function v(id) { return document.getElementById(id).value; }
+  function num(id) { const n = parseFloat(document.getElementById(id).value); return isNaN(n) ? undefined : n; }
+
+  // Init
+  updateTokenUI();
+</script>
+</body>
+</html>
+
+<!----TOKEN STORAGE NOTES (localStorage)--
+// - Never render the token in the real Next.js UI
+// - Never log it to the console in production
+// - Clear it on logout: localStorage.removeItem('gsp_token')
+// - 15min expiry limits damage window if token is stolen
+// - test.html showing the token is fine — dev tool only, never deployed 
+// // FEATURE: Stock Exchange Browser (for frontend — Next.js)
+// ─────────────────────────────────────────────────────────────────────────────
+// When the user selects an exchange (e.g. NYSE) from the dropdown,
+// show a small popover/drawer below the exchange selector that displays:
+//   - Total number of stocks listed on that exchange
+//   - A searchable list of companies (symbol + company name)
+//   - Clicking a company auto-fills the SEARCH input
+//
+// BACKEND NEEDED:
+//   GET /api/stocks?exchange=NYSE returns all stocks for that exchange
+//   No new endpoint needed — the existing stocks route already supports
+//   the exchange query param. Just call it on exchange change.
+//
+// COMPONENT IDEA: <ExchangeBrowser exchange="NYSE" onSelect={(symbol) => ...} />
+//
+// DATA TO SHOW PER ROW:
+//   - Stock symbol (e.g. AAPL)
+//   - Company name (e.g. Apple Inc.)
+//   - Sector (e.g. Technology) — already in stocks table
+//   - Current price — already in stocks table
+//
+// UX FLOW:
+//   1. User opens exchange dropdown and picks NYSE
+//   2. Panel slides open below showing "2,400 companies on NYSE"
+//   3. User can type inside the panel to filter further
+//   4. Clicking a row auto-fills the symbol into the search box
+//      and closes the panel
+//   5. Clicking outside the panel closes it
+//
+// GROUPING IDEA (optional, nice to have):
+//   Group companies by sector inside the panel
+//   e.g. "Aerospace & Defense (42)", "Banking (87)", etc.
+//   Collapsible per sector
+//
+// STATE NEEDED (Redux slice or local state):
+//   - selectedExchange: string
+//   - exchangeStocks: Stock[]
+//   - isExchangePanelOpen: boolean
+//   - panelSearchQuery: string
+//
+// WHEN TO FETCH:
+//   - On exchange dropdown change → call GET /api/stocks?exchange=NYSE
+//   - Cache per exchange in Redux so switching back doesn't re-fetch
+//
+// PAGINATION:
+//   If exchange has 2000+ stocks, don't render all at once.
+//   Use virtual scrolling (react-window) or paginate 50 at a time.
+//   Backend already supports this if you add ?limit=50&offset=0
+//   (add limit/offset support to stocksController when implementing this)
+
+
+The bulk script would:
+
+Fetch prices for all 12,000 stocks from Yahoo
+Run in batches to avoid hammering Yahoo's API
+Complete in roughly 20-30 minutes as a one-time job
+After that Tier 2 maintains freshness on rotation
+
+
+
+
+// ─────────────────────────────────────────────────────────────────────────────-->
