@@ -1,0 +1,73 @@
+Phase 2   → Run seed.sql on Supabase (already done together)
+
+Phase 3   → Auth routes + controllers
+              routes/auth.js
+              controllers/authController.js
+              middleware/authMiddleware.js
+
+Phase 5   → Orders + Portfolio backend
+              routes/orders.js
+              controllers/orderController.js
+              routes/portfolio.js
+              controllers/portfolioController.js
+
+Phase 6   → Wallet backend
+              routes/transactions.js
+              controllers/transactionsController.js
+
+
+Phase 2   → Run seed.sql on Supabase (already done together)
+
+Phase 4   → Stocks routes + controllers
+              routes/stocks.js
+              controllers/stocksController.js
+
+Phase 6   → Watchlist backend
+              routes/watchlist.js
+              controllers/watchlistController.js
+
+Phase 7   → Next.js scaffold
+              app setup, layout, Navbar
+              app/(auth)/login
+              app/(auth)/register
+
+Phase 8   → Stocks UI
+              app/(dashboard)/stocks/page.jsx
+              app/(dashboard)/stocks/[symbol]/page.jsx
+              components/StockCard.jsx
+              components/PriceChart.jsx
+
+Phase 9   → Portfolio + Wallet + Watchlist UI
+              app/(dashboard)/portfolio/page.jsx
+              app/(dashboard)/wallet/page.jsx
+              app/(dashboard)/watchlist/page.jsx
+              app/(dashboard)/orders/page.jsx
+
+
+
+SMART ORDER
+├── Bulk import script          (today - half day)
+├── Frontend MVP                (1-2 weeks - you SEE the product)
+├── Phase 3 Trading Engine      (backend, add while frontend exists)
+├── Phase 4 Advanced Features   (backend + wire into frontend)
+└── Phase 5 Analytics           (last - needs real data anyway)
+
+
+TODAY
+└── 🔄 Bulk symbol import script (1–2 hrs)
+    └── Then: START FRONTEND
+
+FRONTEND PHASE (Next few weeks)
+└── All 7 pages consuming your existing backend
+
+AFTER FIRST FRONTEND DEPLOY
+├── Limit order matching
+├── Market hours validation
+├── Live FX rates
+├── Price alerts UI + backend
+└── Fundamentals + News
+
+MUCH LATER (Real users, real data)
+├── Analytics
+├── Tax reporting
+└── Indices dashboard

@@ -1,0 +1,38 @@
+1. Server Entry Point (index.js)
+The main file that starts the Express server, connects middleware (cors, json parser), and mounts all routes.
+2. Database Connection (config/db.js)
+PostgreSQL connection pool using the pg library — handles all DB connections.
+3. Authentication (routes/auth.js)
+
+POST /api/auth/register — hashes password with bcrypt, inserts new user into users table
+POST /api/auth/login — verifies password, returns JWT token
+
+4. JWT Middleware (middleware/authMiddleware.js)
+Protects private routes by verifying the JWT token on every request.
+5. Orders (routes/orders.js)
+
+POST /api/orders — places a buy/sell order, auto-executes market orders
+GET /api/orders/history — fetches user's order history with stock details
+
+6. Portfolio (routes/portfolio.js)
+
+GET /api/portfolio — returns all holdings with invested value calculated
+
+7. Stocks (routes/stocks.js)
+
+GET /api/stocks — lists all stocks from master table
+GET /api/stocks/:symbol — gets details of a specific stock
+
+8. Wallet/Transactions (routes/transactions.js)
+
+POST /api/wallet/deposit — adds funds to user account
+GET /api/wallet/balance — returns current balance
+
+9. Watchlist (routes/watchlist.js)
+
+POST /api/watchlist — adds a stock to watchlist
+DELETE /api/watchlist/:id — removes from watchlist
+GET /api/watchlist — fetches user's watchlist
+
+10. SQL Schema (schema.sql)
+All CREATE TABLE statements — users, stocks, orders, trades, portfolios, transactions, watchlists with indexes and constraints
