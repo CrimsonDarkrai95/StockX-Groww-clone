@@ -40,7 +40,6 @@ const register = async (req, res) => {
   try {
     const { email, password, name } = req.body;
     if (!email || !password) {
-      client.release();
       return res
         .status(400)
         .json({ success: false, data: null, error: 'Email and password required' });
@@ -57,6 +56,14 @@ const register = async (req, res) => {
     );
 
     const user = result.rows[0];
+
+    // Create a default portfolio for the new user so that GET /api/portfolio
+    // works immediately after registration without requiring a first purchase.
+    await client.query(
+      `INSERT INTO portfolios (user_id, name) VALUES ($1, 'My Portfolio')`,
+      [user.id]
+    );
+
     const accessToken = createAccessToken(user.id);
     const refreshToken = await createAndStoreRefreshToken(client, user.id);
 
@@ -92,7 +99,6 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      client.release();
       return res
         .status(400)
         .json({ success: false, data: null, error: 'Email and password required' });
@@ -107,7 +113,6 @@ const login = async (req, res) => {
     const user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.hashed_password))) {
-      client.release();
       return res
         .status(401)
         .json({ success: false, data: null, error: 'Invalid credentials' });

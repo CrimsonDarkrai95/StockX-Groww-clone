@@ -2,7 +2,7 @@
 
 const pool = require('../config/db');
 
-// FIX: yahoo-finance2 is a singleton — do NOT use `new YahooFinance()`
+// yahoo-finance2 v3.x exports the YahooFinance class as default — instantiate it.
 const YahooFinance = require('yahoo-finance2').default;
 const yahooFinance = new YahooFinance();
 
