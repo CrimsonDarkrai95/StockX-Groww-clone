@@ -29,6 +29,7 @@ const createAndStoreRefreshToken = async (client, userId) => {
 const buildUserPayload = (userRow) => ({
   id: userRow.id,
   email: userRow.email,
+  name: userRow.name ?? null,
   balance: userRow.balance,
   homeCurrency: userRow.home_currency,
   kycStatus: userRow.kyc_status,
@@ -37,7 +38,7 @@ const buildUserPayload = (userRow) => ({
 const register = async (req, res) => {
   const client = await pool.connect();
   try {
-    const { email, password } = req.body;
+    const { email, password, name } = req.body;
     if (!email || !password) {
       client.release();
       return res
@@ -49,10 +50,10 @@ const register = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
     const result = await client.query(
-      `INSERT INTO users (email, hashed_password)
-       VALUES ($1, $2)
-       RETURNING id, email, balance, home_currency, kyc_status`,
-      [email, hashed]
+      `INSERT INTO users (email, hashed_password, name)
+       VALUES ($1, $2, $3)
+       RETURNING id, email, name, balance, home_currency, kyc_status`,
+      [email, hashed, name || null]
     );
 
     const user = result.rows[0];
@@ -98,7 +99,7 @@ const login = async (req, res) => {
     }
 
     const result = await client.query(
-      `SELECT id, email, hashed_password, balance, home_currency, kyc_status
+      `SELECT id, email, name, hashed_password, balance, home_currency, kyc_status
        FROM users
        WHERE email = $1`,
       [email]
@@ -142,7 +143,7 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, email, balance, home_currency, kyc_status
+      `SELECT id, email, name, balance, home_currency, kyc_status
        FROM users
        WHERE id = $1`,
       [req.user.id]
