@@ -7,6 +7,9 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS name          TEXT;
+
+ALTER TABLE users
   ADD COLUMN IF NOT EXISTS balance       NUMERIC(20,8)  NOT NULL DEFAULT 0;
 
 ALTER TABLE users
