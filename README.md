@@ -8,7 +8,7 @@ Supports NSE, NYSE, NASDAQ, SGX, and LSE with live price sync via Yahoo Finance.
 ## Tech Stack
 
 - **Runtime**: Node.js 20 LTS
-- **Framework**: Express 4.x
+- **Framework**: Express 5.x
 - **Language**: JavaScript (ES2022, CommonJS)
 - **Database**: PostgreSQL 16 on Supabase
 - **DB Client**: node-postgres (pg)
