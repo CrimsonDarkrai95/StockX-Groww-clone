@@ -1453,17 +1453,17 @@ async function handleLogin() {
       body: JSON.stringify({ email, password: pass })
     });
     const data = await res.json();
-    if (res.ok && data.accessToken) {
-      authState = { loggedIn: true, token: data.accessToken, user: data.user };
-      localStorage.setItem('sx_token', data.accessToken);
-      localStorage.setItem('sx_user', JSON.stringify(data.user));
-      if (data.user?.email) {
-        document.getElementById('user-avatar').textContent = data.user.email[0].toUpperCase();
+    if (res.ok && data.data?.accessToken) {
+      authState = { loggedIn: true, token: data.data.accessToken, user: data.data.user };
+      localStorage.setItem('sx_token', data.data.accessToken);
+      localStorage.setItem('sx_user', JSON.stringify(data.data.user));
+      if (data.data.user?.email) {
+        document.getElementById('user-avatar').textContent = data.data.user.email[0].toUpperCase();
       }
       showToast('Welcome back! 👋', 'success');
       showPage('dashboard');
     } else {
-      showToast(data.message || 'Invalid credentials', 'error');
+      showToast(data.error || 'Invalid credentials', 'error');
     }
   } catch {
     // Demo mode fallback
@@ -1500,7 +1500,7 @@ async function handleRegister() {
       showToast('Account created! Please sign in.', 'success');
       switchAuthTab('login');
     } else {
-      showToast(data.message || 'Registration failed', 'error');
+      showToast(data.error || 'Registration failed', 'error');
     }
   } catch {
     authState = { loggedIn: true, token: 'demo', user: { email, name } };
