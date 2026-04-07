@@ -58,46 +58,10 @@ FX_GBP_INR=106.0
 
 ### 4. Run the database migration
 
-Open your Supabase project → SQL Editor → paste and run `schema.sql` first, then paste and run the migration below:
+Open your Supabase project → SQL Editor → paste and run `schema.sql`.  
+`schema.sql` is the single source of truth for all schema migrations — it is fully idempotent and safe to re-run at any time.
 
-```sql
-ALTER TABLE stocks ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMPTZ;
-ALTER TABLE stocks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ;
-ALTER TABLE holdings ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_stocks_symbol_exchange ON stocks (symbol, exchange);
-
-CREATE TABLE IF NOT EXISTS refresh_tokens (
-  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id    UUID REFERENCES users(id) ON DELETE CASCADE,
-  token_hash TEXT NOT NULL,
-  expires_at TIMESTAMPTZ NOT NULL,
-  revoked_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens (user_id);
-
-CREATE OR REPLACE FUNCTION update_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS set_stocks_updated_at ON stocks;
-CREATE TRIGGER set_stocks_updated_at
-  BEFORE UPDATE ON stocks
-  FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-
-DROP TRIGGER IF EXISTS set_holdings_updated_at ON holdings;
-CREATE TRIGGER set_holdings_updated_at
-  BEFORE UPDATE ON holdings
-  FOR EACH ROW EXECUTE FUNCTION update_timestamp();
-```
-
-> All statements are idempotent — safe to re-run if needed.
+> All statements use `IF NOT EXISTS` / `IF EXISTS` guards, so they are safe to re-run if needed.
 
 ### 5. Seed the stock universe
 
