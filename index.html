@@ -1674,11 +1674,12 @@ async function fetchRealStocks() {
     const res = await fetch(`${API}/api/stocks?limit=50`, { headers });
     if (res.ok) {
       const data = await res.json();
-      if (data.stocks && data.stocks.length > 0) {
-        const mapped = data.stocks.map(s => ({
+      const stocks = data.data?.stocks;
+      if (stocks && stocks.length > 0) {
+        const mapped = stocks.map(s => ({
           sym: s.symbol,
           name: s.company_name || s.name || s.symbol,
-          price: formatPrice(s.current_price, s.currency),
+          price: formatPrice(s.current_price, s.listing_currency),
           chg: formatChg(s.change_pct || s.day_change_pct),
           up: (s.change_pct || s.day_change_pct) >= 0,
           exchange: s.exchange || 'NSE',
@@ -1755,10 +1756,11 @@ async function showStockDetail(symbol, exchange) {
     });
     if (res.ok) {
       const d = await res.json();
-      if (d.current_price) {
-        const p = d.current_price;
+      const stock = d.data?.stock;
+      if (stock && stock.current_price) {
+        const p = stock.current_price;
         currentDetailPrice = p;
-        const currency = d.currency === 'INR' ? '₹' : d.currency === 'GBP' ? '£' : d.currency === 'SGD' ? 'S$' : '$';
+        const currency = stock.listing_currency === 'INR' ? '₹' : stock.listing_currency === 'GBP' ? '£' : stock.listing_currency === 'SGD' ? 'S$' : '$';
         document.getElementById('detail-price').textContent = currency + Number(p).toFixed(2);
         document.getElementById('sum-price').textContent = currency + Number(p).toFixed(2);
         updateTradeSummary();
@@ -1830,7 +1832,7 @@ async function placeOrder() {
       showToast(`✓ ${currentTradeTab === 'buy' ? 'Bought' : 'Sold'} ${qty} × ${sym} successfully!`, 'success');
     } else {
       const d = await res.json();
-      showToast(d.message || 'Order failed — check balance', 'error');
+      showToast(d.error || 'Order failed — check balance', 'error');
     }
   } catch {
     showToast(`✓ Order simulated: ${currentTradeTab.toUpperCase()} ${qty} × ${sym}`, 'success');
