@@ -49,11 +49,9 @@ html, body {
 #page-auth     { position: fixed; inset: 0; z-index: 1900; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); }
 #page-dashboard{ position: fixed; inset: 0; z-index: 1800; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-stocks   { position: fixed; inset: 0; z-index: 1850; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
-#page-orders   { position: fixed; inset: 0; z-index: 1860; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
-#page-wallet   { position: fixed; inset: 0; z-index: 1865; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
-#page-stock-detail { position: fixed; inset: 0; z-index: 1870; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-orders   { position: fixed; inset: 0; z-index: 1855; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-wallet   { position: fixed; inset: 0; z-index: 1857; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
+#page-stock-detail { position: fixed; inset: 0; z-index: 1870; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 
 /* ════════════════════════════════════════
    LANDING PAGE
@@ -1911,55 +1909,6 @@ async function fetchOrderHistory() {
   return rows;
 }
 
-async function loadOrdersPage() {
-  if (!authState.loggedIn) return;
-  try {
-    const rows = await fetchOrderHistory();
-    renderOrdersPage(rows);
-    await fetchWalletBalance();
-  } catch (err) {
-    showToast(err.message || 'Unable to load orders page', 'error');
-  }
-}
-
-async function loadWalletPage() {
-  if (!authState.loggedIn) return;
-  try {
-    const wallet = await fetchWalletBalance();
-    renderWalletTransactions(wallet.recentTransactions || [], wallet.homeCurrency || authState.user?.homeCurrency || 'INR');
-  } catch (err) {
-    showToast(err.message || 'Unable to load wallet page', 'error');
-  }
-}
-
-async function walletAction(type) {
-  if (!authState.loggedIn) return;
-  const amtEl = document.getElementById('wallet-amount');
-  const amount = Number(amtEl?.value);
-  if (!Number.isFinite(amount) || amount <= 0) {
-    showToast('Enter a valid amount', 'error');
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API}/api/wallet/${type === 'deposit' ? 'deposit' : 'withdraw'}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify({ amount }),
-    });
-    const json = await res.json();
-    if (!res.ok) {
-      showToast(getResponseError(json, `Unable to ${type}`), 'error');
-      return;
-    }
-    showToast(`${type === 'deposit' ? 'Deposit' : 'Withdraw'} successful`, 'success');
-    if (amtEl) amtEl.value = '';
-    await Promise.all([loadWalletPage(), loadDashboardData()]);
-  } catch {
-    showToast(`Unable to ${type} right now`, 'error');
-  }
-}
-
 async function loadDashboardData() {
   if (!authState.loggedIn) return;
   setUserAvatar();
@@ -2518,7 +2467,7 @@ function renderStocksList() {
     const analytics = stockAnalyticsBySymbol[s.sym];
     const chgText = analytics ? formatChg(analytics.pct) : s.chg;
     const isUp = analytics ? analytics.pct >= 0 : s.up;
-    const volText = analytics?.volume ? `${(analytics.volume / 1000000).toFixed(2)}M` : randomVol();
+    const volText = formatVolume(analytics?.volume || s.rawVolume);
     const bars = generateMiniSparkBars(isUp);
     return `
     <div class="stock-row" onclick="showStockDetail('${s.sym}','${s.exchange}','${s.stockId || ''}')">
@@ -2531,8 +2480,8 @@ function renderStocksList() {
       </div>
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">${s.exchange}</div>
       <div class="stock-price">${s.price}</div>
-      <div class="stock-change ${s.up?'up':'down'}">${s.chg}</div>
-      <div class="vol-val">${formatVolume(s.rawVolume)}</div>
+      <div class="stock-change ${isUp?'up':'down'}">${chgText}</div>
+      <div class="vol-val">${volText}</div>
       <div class="spark-bars">${bars}</div>
     </div>`;
   }).join('');
