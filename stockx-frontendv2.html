@@ -50,8 +50,8 @@ html, body {
 #page-dashboard{ position: fixed; inset: 0; z-index: 1800; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-stocks   { position: fixed; inset: 0; z-index: 1850; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-stock-detail { position: fixed; inset: 0; z-index: 1870; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
-#page-orders   { position: fixed; inset: 0; z-index: 1860; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
-#page-wallet   { position: fixed; inset: 0; z-index: 1860; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
+#page-orders   { position: fixed; inset: 0; z-index: 1855; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
+#page-wallet   { position: fixed; inset: 0; z-index: 1857; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 
 /* ════════════════════════════════════════
    LANDING PAGE
@@ -1637,6 +1637,13 @@ function formatMoney(value, currency = 'INR') {
   return `${symbol}${n.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 }
 
+// Returns the canonical price-change-percent field from a stock API row.
+// The backend exposes this under different names across endpoints.
+function getStockChgPct(s) {
+  const val = s.change_pct ?? s.day_change_pct ?? null;
+  return val != null ? Number(val) : null;
+}
+
 function setWalletInUi(balance, currency = 'INR') {
   const text = formatMoney(balance, currency);
   const ids = ['nav-wallet-bal', 'nav-wallet-bal-stocks', 'nav-wallet-bal-orders', 'nav-wallet-bal-wallet', 'detail-available-balance'];
@@ -1803,20 +1810,20 @@ async function loadDashboardData() {
 async function fetchTopGainersLosers() {
   try {
     // Re-use already-loaded stocks when available, otherwise fetch a batch
-    let source = allStocks.filter(s => s.rawChgPct != null);
-    if (!source.length) {
+    let stocksWithChg = allStocks.filter(s => s.rawChgPct != null);
+    if (!stocksWithChg.length) {
       const res = await fetch(`${API}/api/stocks?limit=100&page=1`);
       if (res.ok) {
         const json = await res.json();
         const rows = getResponseData(json)?.stocks || [];
-        source = rows.map(s => ({
+        stocksWithChg = rows.map(s => ({
           stockId: s.id,
           sym: s.symbol,
           name: s.company_name || s.symbol,
           price: formatPrice(s.current_price, s.listing_currency),
-          rawChgPct: s.change_pct ?? s.day_change_pct ?? null,
-          chg: (s.change_pct ?? s.day_change_pct) != null ? formatChg(s.change_pct ?? s.day_change_pct) : null,
-          up: (s.change_pct ?? s.day_change_pct ?? 0) >= 0,
+          rawChgPct: getStockChgPct(s),
+          chg: getStockChgPct(s) != null ? formatChg(getStockChgPct(s)) : null,
+          up: (getStockChgPct(s) ?? 0) >= 0,
           exchange: s.exchange || 'NSE',
         })).filter(s => s.rawChgPct != null);
       }
@@ -1825,7 +1832,7 @@ async function fetchTopGainersLosers() {
     const gList = document.getElementById('gainers-list');
     const lList = document.getElementById('losers-list');
 
-    if (!source.length) {
+    if (!stocksWithChg.length) {
       // Fallback to hardcoded EXCHANGE_STOCKS data when API has no change data
       const fallback = Object.entries(EXCHANGE_STOCKS).flatMap(([ex, arr]) =>
         arr.map(s => ({ ...s, exchange: ex }))
@@ -1847,7 +1854,7 @@ async function fetchTopGainersLosers() {
       return;
     }
 
-    const sorted = [...source].sort((a, b) => (b.rawChgPct || 0) - (a.rawChgPct || 0));
+    const sorted = [...stocksWithChg].sort((a, b) => (b.rawChgPct || 0) - (a.rawChgPct || 0));
     const gainers = sorted.filter(s => s.rawChgPct > 0).slice(0, 5);
     const losers  = sorted.filter(s => s.rawChgPct < 0).reverse().slice(0, 5);
 
@@ -2281,9 +2288,9 @@ async function openExchangeTooltip(exchangeKey, point) {
           sym: s.symbol,
           name: s.company_name || s.symbol,
           price: formatPrice(s.current_price, s.listing_currency),
-          rawChgPct: s.change_pct ?? s.day_change_pct ?? null,
-          chg: (s.change_pct ?? s.day_change_pct) != null ? formatChg(s.change_pct ?? s.day_change_pct) : '—',
-          up: (s.change_pct ?? s.day_change_pct ?? 0) >= 0,
+          rawChgPct: getStockChgPct(s),
+          chg: getStockChgPct(s) != null ? formatChg(getStockChgPct(s)) : '—',
+          up: (getStockChgPct(s) ?? 0) >= 0,
           stockId: s.id,
         }));
       }
@@ -2372,7 +2379,7 @@ async function fetchRealStocks() {
       const rows = getResponseData(json)?.stocks || [];
       if (rows.length > 0) {
         const mapped = rows.map(s => {
-          const rawChgPct = s.change_pct ?? s.day_change_pct ?? null;
+          const rawChgPct = getStockChgPct(s);
           const rawVolume = s.volume ?? s.vol ?? null;
           return {
             stockId: s.id,
@@ -2413,8 +2420,8 @@ function formatChg(pct) {
   const sign = pct >= 0 ? '+' : '';
   return `${sign}${Number(pct).toFixed(2)}%`;
 }
-function formatVolume(v) {
-  const n = Number(v);
+function formatVolume(volume) {
+  const n = Number(volume);
   if (!Number.isFinite(n) || n <= 0) return '—';
   if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
   if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
