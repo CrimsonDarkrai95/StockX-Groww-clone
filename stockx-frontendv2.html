@@ -49,6 +49,8 @@ html, body {
 #page-auth     { position: fixed; inset: 0; z-index: 1900; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); }
 #page-dashboard{ position: fixed; inset: 0; z-index: 1800; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-stocks   { position: fixed; inset: 0; z-index: 1850; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
+#page-orders   { position: fixed; inset: 0; z-index: 1860; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
+#page-wallet   { position: fixed; inset: 0; z-index: 1865; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-stock-detail { position: fixed; inset: 0; z-index: 1870; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-orders   { position: fixed; inset: 0; z-index: 1855; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-wallet   { position: fixed; inset: 0; z-index: 1857; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
@@ -1533,6 +1535,8 @@ let globeInst = null;
 let currentTradeTab = 'buy';
 let currentDetailPrice = 2450.30;
 let isFetchingStocks = false;
+const stockAnalyticsBySymbol = {};
+let analyticsRequested = false;
 
 const EXCHANGES = {
   NSE:    { lat: 19.0760, lng: 72.8777, label: 'NSE', meta: 'National Stock Exchange · India', color: '#f5a623', market: 'INR' },
@@ -1546,16 +1550,16 @@ const EXCHANGES = {
 
 const EXCHANGE_STOCKS = {
   NSE:    [
-    { sym:'RELIANCE.NS', name:'Reliance Industries', price:'₹2,450', chg:'+1.2%', up:true },
-    { sym:'TCS.NS',      name:'Tata Consultancy',    price:'₹3,880', chg:'+0.9%', up:true },
-    { sym:'INFY.NS',     name:'Infosys Ltd',          price:'₹1,560', chg:'-0.4%', up:false},
+    { sym:'RELIANCE.NS', name:'Reliance Industries Limited', price:'₹2,450', chg:'+1.2%', up:true },
+    { sym:'TCS.NS',      name:'Tata Consultancy Services Limited',    price:'₹3,880', chg:'+0.9%', up:true },
+    { sym:'INFY.NS',     name:'Infosys Limited',          price:'₹1,560', chg:'-0.4%', up:false},
     { sym:'HDFCBANK.NS', name:'HDFC Bank',            price:'₹1,680', chg:'+0.6%', up:true },
-    { sym:'BAJFINANCE.NS',name:'Bajaj Finance',       price:'₹7,120', chg:'+1.8%', up:true },
+    { sym:'BAJFINANCE.NS',name:'Bajaj Finance Limited',       price:'₹7,120', chg:'+1.8%', up:true },
   ],
   NYSE:   [
     { sym:'AAPL',  name:'Apple Inc.',       price:'$187.45', chg:'+0.8%', up:true  },
     { sym:'MSFT',  name:'Microsoft Corp.',  price:'$412.80', chg:'+1.5%', up:true  },
-    { sym:'BRKB',  name:'Berkshire Hathaway',price:'$393.20',chg:'-0.2%',up:false  },
+    { sym:'BRKB',  name:'Berkshire Hathaway Inc. Class B',price:'$393.20',chg:'-0.2%',up:false  },
     { sym:'JPM',   name:'JPMorgan Chase',   price:'$195.40', chg:'+0.4%', up:true  },
     { sym:'WMT',   name:'Walmart Inc.',     price:'$65.80',  chg:'+0.7%', up:true  },
   ],
@@ -1567,32 +1571,32 @@ const EXCHANGE_STOCKS = {
     { sym:'AMZN',  name:'Amazon.com',       price:'$185.90', chg:'+1.1%', up:true  },
   ],
   LSE:    [
-    { sym:'HSBA.L', name:'HSBC Holdings',   price:'£6.78',   chg:'-0.3%', up:false },
+    { sym:'HSBA.L', name:'HSBC Holdings plc',   price:'£6.78',   chg:'-0.3%', up:false },
     { sym:'BP.L',   name:'BP plc',          price:'£4.91',   chg:'+0.5%', up:true  },
-    { sym:'VOD.L',  name:'Vodafone Group',  price:'£0.72',   chg:'-1.2%', up:false },
+    { sym:'VOD.L',  name:'Vodafone Group plc',  price:'£0.72',   chg:'-1.2%', up:false },
     { sym:'SHEL.L', name:'Shell plc',       price:'£26.40',  chg:'+0.8%', up:true  },
-    { sym:'AZN.L',  name:'AstraZeneca',     price:'£119.40', chg:'+1.3%', up:true  },
+    { sym:'AZN.L',  name:'AstraZeneca plc',     price:'£119.40', chg:'+1.3%', up:true  },
   ],
   SGX:    [
-    { sym:'DBS.SI',  name:'DBS Group',      price:'S$33.21', chg:'+0.5%', up:true  },
-    { sym:'OCBC.SI', name:'OCBC Bank',      price:'S$13.45', chg:'+0.3%', up:true  },
-    { sym:'UOB.SI',  name:'United Overseas', price:'S$28.60',chg:'-0.1%', up:false },
-    { sym:'ST.SI',   name:'Singapore Telecom',price:'S$2.33',chg:'+0.9%', up:true  },
+    { sym:'DBS.SI',  name:'DBS Group Holdings Ltd',      price:'S$33.21', chg:'+0.5%', up:true  },
+    { sym:'OCBC.SI', name:'Oversea-Chinese Banking Corporation Limited',      price:'S$13.45', chg:'+0.3%', up:true  },
+    { sym:'UOB.SI',  name:'United Overseas Bank Limited', price:'S$28.60',chg:'-0.1%', up:false },
+    { sym:'ST.SI',   name:'Singapore Telecommunications Limited',price:'S$2.33',chg:'+0.9%', up:true  },
     { sym:'KEP.SI',  name:'Keppel Corp',    price:'S$6.48',  chg:'+1.2%', up:true  },
   ],
   HKEX:   [
-    { sym:'9988.HK', name:'Alibaba Group',  price:'HK$77.55',chg:'+1.4%', up:true  },
-    { sym:'0700.HK', name:'Tencent Holdings',price:'HK$362', chg:'+0.8%', up:true  },
+    { sym:'9988.HK', name:'Alibaba Group Holding Limited',  price:'HK$77.55',chg:'+1.4%', up:true  },
+    { sym:'0700.HK', name:'Tencent Holdings Limited',price:'HK$362', chg:'+0.8%', up:true  },
     { sym:'3690.HK', name:'Meituan',        price:'HK$128',  chg:'-0.5%', up:false },
-    { sym:'2318.HK', name:'Ping An Insurance',price:'HK$42', chg:'-0.2%', up:false },
+    { sym:'2318.HK', name:'Ping An Insurance (Group) Company of China, Ltd.',price:'HK$42', chg:'-0.2%', up:false },
     { sym:'0941.HK', name:'China Mobile',   price:'HK$61.5', chg:'+0.4%', up:true  },
   ],
   TSE:    [
-    { sym:'7203.T', name:'Toyota Motor',    price:'¥3,540',  chg:'+0.6%', up:true  },
+    { sym:'7203.T', name:'Toyota Motor Corporation',    price:'¥3,540',  chg:'+0.6%', up:true  },
     { sym:'9984.T', name:'SoftBank Group',  price:'¥9,220',  chg:'+1.9%', up:true  },
     { sym:'6758.T', name:'Sony Group',      price:'¥12,860', chg:'-0.4%', up:false },
-    { sym:'8306.T', name:'Mitsubishi UFJ',  price:'¥1,428',  chg:'+0.3%', up:true  },
-    { sym:'6501.T', name:'Hitachi Ltd',     price:'¥13,200', chg:'+1.1%', up:true  },
+    { sym:'8306.T', name:'Mitsubishi UFJ Financial Group, Inc.',  price:'¥1,428',  chg:'+0.3%', up:true  },
+    { sym:'6501.T', name:'Hitachi, Ltd.',     price:'¥13,200', chg:'+1.1%', up:true  },
   ],
 };
 
@@ -1758,6 +1762,118 @@ function renderOrders(rows) {
   `).join('');
 }
 
+function renderOrdersPage(rows) {
+  const list = document.getElementById('orders-page-list');
+  if (!list) return;
+  if (!rows.length) {
+    list.innerHTML = '<div class="section-empty">No orders yet</div>';
+    return;
+  }
+
+  list.innerHTML = `
+    <div class="stocks-header-row" style="grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1.2fr">
+      <span>Symbol</span><span>Side</span><span>Type</span><span>Qty</span><span>Status</span><span>Value</span>
+    </div>
+    ${rows.map((o) => `
+      <div class="stock-row" style="grid-template-columns:1.4fr 1fr 1fr 1fr 1fr 1.2fr;cursor:default">
+        <div class="stock-sym-main">${escapeHtml((o.symbol || '').split('.')[0])}</div>
+        <div class="stock-change ${(o.side || '').toLowerCase() === 'sell' ? 'down' : 'up'}">${escapeHtml((o.side || '').toUpperCase())}</div>
+        <div class="vol-val">${escapeHtml((o.order_type || 'market').toUpperCase())}</div>
+        <div class="vol-val">${Number(o.quantity || 0)}</div>
+        <div class="vol-val">${escapeHtml((o.status || 'executed').toUpperCase())}</div>
+        <div class="stock-price">${formatMoney(o.executed_total || Number(o.quantity || 0) * Number(o.executed_price || o.limit_price || 0), o.listing_currency)}</div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function renderWalletTransactions(rows, currency = 'INR') {
+  const list = document.getElementById('wallet-tx-list');
+  if (!list) return;
+  if (!rows.length) {
+    list.innerHTML = '<div class="section-empty">No wallet transactions yet</div>';
+    return;
+  }
+
+  list.innerHTML = rows.map((t) => `
+    <div class="order-row" style="padding:12px 24px">
+      <div class="order-top">
+        <span class="order-sym">${escapeHtml(String(t.txn_type || '').toUpperCase())}</span>
+        <span class="order-val">${formatMoney(t.amount, currency)}</span>
+      </div>
+      <div class="order-bot">
+        <span class="order-qty">Before: ${formatMoney(t.balance_before, currency)} · After: ${formatMoney(t.balance_after, currency)}</span>
+        <span class="order-qty">${new Date(t.created_at).toLocaleString()}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderTopMovers() {
+  const gainers = document.getElementById('gainers-list');
+  const losers = document.getElementById('losers-list');
+  if (!gainers || !losers) return;
+
+  const withPct = allStocks
+    .map((s) => ({ ...s, pct: stockAnalyticsBySymbol[s.sym]?.pct }))
+    .filter((s) => Number.isFinite(s.pct));
+
+  if (!withPct.length) return;
+
+  const topGain = [...withPct].sort((a, b) => b.pct - a.pct).slice(0, 4);
+  const topLose = [...withPct].sort((a, b) => a.pct - b.pct).slice(0, 4);
+
+  gainers.innerHTML = topGain.map((s) => `
+    <div class="watch-row" onclick="showStockDetail('${escapeHtml(s.sym)}','${escapeHtml(s.exchange)}','${escapeHtml(s.stockId || '')}')">
+      <span class="watch-sym">${escapeHtml(s.sym.split('.')[0])}</span>
+      <span class="watch-price">${formatPrice(stockAnalyticsBySymbol[s.sym]?.last || parsePriceNum(s.price), s.currency)}</span>
+      <span class="watch-chg up">${formatChg(s.pct)}</span>
+    </div>
+  `).join('');
+
+  losers.innerHTML = topLose.map((s) => `
+    <div class="watch-row" onclick="showStockDetail('${escapeHtml(s.sym)}','${escapeHtml(s.exchange)}','${escapeHtml(s.stockId || '')}')">
+      <span class="watch-sym">${escapeHtml(s.sym.split('.')[0])}</span>
+      <span class="watch-price">${formatPrice(stockAnalyticsBySymbol[s.sym]?.last || parsePriceNum(s.price), s.currency)}</span>
+      <span class="watch-chg down">${formatChg(s.pct)}</span>
+    </div>
+  `).join('');
+}
+
+async function hydrateLiveAnalytics() {
+  if (analyticsRequested || !allStocks.length) return;
+  analyticsRequested = true;
+  const symbols = allStocks.slice(0, 80).map((s) => s.sym);
+  const batchSize = 8;
+
+  for (let i = 0; i < symbols.length; i += batchSize) {
+    const batch = symbols.slice(i, i + batchSize);
+    await Promise.all(batch.map(async (sym) => {
+      if (stockAnalyticsBySymbol[sym]) return;
+      try {
+        const res = await fetch(`${API}/api/stocks/${encodeURIComponent(sym)}`);
+        if (!res.ok) return;
+        const json = await res.json();
+        const payload = getResponseData(json);
+        const history = payload?.priceHistory || [];
+        const latest = history[history.length - 1];
+        const prev = history[history.length - 2];
+        if (!latest?.close || !prev?.close) return;
+        const last = Number(latest.close);
+        const before = Number(prev.close);
+        if (!Number.isFinite(last) || !Number.isFinite(before) || before === 0) return;
+        const pct = ((last - before) / before) * 100;
+        stockAnalyticsBySymbol[sym] = { pct, last, volume: Number(latest.volume || 0) };
+      } catch {
+        return;
+      }
+    }));
+  }
+
+  renderTopMovers();
+  renderStocksList();
+}
+
 async function fetchWalletBalance() {
   const res = await fetch(`${API}/api/wallet/balance`, { headers: getAuthHeaders() });
   const json = await res.json();
@@ -1795,11 +1911,62 @@ async function fetchOrderHistory() {
   return rows;
 }
 
+async function loadOrdersPage() {
+  if (!authState.loggedIn) return;
+  try {
+    const rows = await fetchOrderHistory();
+    renderOrdersPage(rows);
+    await fetchWalletBalance();
+  } catch (err) {
+    showToast(err.message || 'Unable to load orders page', 'error');
+  }
+}
+
+async function loadWalletPage() {
+  if (!authState.loggedIn) return;
+  try {
+    const wallet = await fetchWalletBalance();
+    renderWalletTransactions(wallet.recentTransactions || [], wallet.homeCurrency || authState.user?.homeCurrency || 'INR');
+  } catch (err) {
+    showToast(err.message || 'Unable to load wallet page', 'error');
+  }
+}
+
+async function walletAction(type) {
+  if (!authState.loggedIn) return;
+  const amtEl = document.getElementById('wallet-amount');
+  const amount = Number(amtEl?.value);
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showToast('Enter a valid amount', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/wallet/${type === 'deposit' ? 'deposit' : 'withdraw'}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ amount }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      showToast(getResponseError(json, `Unable to ${type}`), 'error');
+      return;
+    }
+    showToast(`${type === 'deposit' ? 'Deposit' : 'Withdraw'} successful`, 'success');
+    if (amtEl) amtEl.value = '';
+    await Promise.all([loadWalletPage(), loadDashboardData()]);
+  } catch {
+    showToast(`Unable to ${type} right now`, 'error');
+  }
+}
+
 async function loadDashboardData() {
   if (!authState.loggedIn) return;
   setUserAvatar();
   try {
     await Promise.all([fetchWalletBalance(), fetchPortfolio(), fetchWatchlist(), fetchOrderHistory()]);
+    if (!allStocks.length) await fetchRealStocks();
+    hydrateLiveAnalytics();
   } catch (err) {
     showToast(err.message || 'Unable to load dashboard data', 'error');
   }
@@ -2348,7 +2515,11 @@ function renderStocksList() {
   }
 
   list.innerHTML = filtered.map(s => {
-    const bars = generateMiniSparkBars(s.up);
+    const analytics = stockAnalyticsBySymbol[s.sym];
+    const chgText = analytics ? formatChg(analytics.pct) : s.chg;
+    const isUp = analytics ? analytics.pct >= 0 : s.up;
+    const volText = analytics?.volume ? `${(analytics.volume / 1000000).toFixed(2)}M` : randomVol();
+    const bars = generateMiniSparkBars(isUp);
     return `
     <div class="stock-row" onclick="showStockDetail('${s.sym}','${s.exchange}','${s.stockId || ''}')">
       <div class="stock-sym-col">
@@ -2398,6 +2569,7 @@ async function fetchRealStocks() {
         });
         allStocks = mapped;
         renderStocksList();
+        hydrateLiveAnalytics();
       }
     }
   } catch {
