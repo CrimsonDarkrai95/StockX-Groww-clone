@@ -660,6 +660,27 @@ html, body {
   .features-grid { grid-template-columns: 1fr; }
   .detail-metrics { grid-template-columns: repeat(2,1fr); }
 }
+@media (max-width: 768px) {
+  .dash-body { flex-direction: column; overflow-y: auto; }
+  .dash-left, .dash-right { min-width: 0; width: 100%; }
+  .dash-center { display: none; }
+  .detail-body { flex-direction: column; }
+  .detail-right { width: 100%; }
+  .stocks-header-row span:nth-child(5),
+  .stocks-header-row span:nth-child(6),
+  .stock-row .spark-bars,
+  .stock-row .vol-val { display: none; }
+  .stocks-header-row, .stock-row { grid-template-columns: 2fr 1fr 1fr 1fr !important; }
+  .wallet-page-body, .land-features { padding: 20px 16px; }
+  .land-hero-left { padding: 40px 20px; }
+  .land-nav { padding: 14px 20px; }
+}
+@media (max-width: 480px) {
+  .land-stats { grid-template-columns: 1fr; }
+  .land-nav-links { display: none; }
+  .dash-nav-links { gap: 12px; }
+  .dash-nav-link { font-size: 12px; }
+}
 /* ════════════════════════════════════════
    LANDING — TYPING ANIMATION
 ════════════════════════════════════════ */
@@ -996,46 +1017,7 @@ html, body {
           <span class="accent" id="holdings-count">4</span>
         </div>
         <div id="holdings-list">
-          <div class="holding-row" onclick="showStockDetail('RELIANCE.NS','NSE')">
-            <div class="holding-sym-wrap">
-              <div class="holding-sym">RELIANCE</div>
-              <div class="holding-name">Reliance Industries</div>
-            </div>
-            <div class="holding-right">
-              <div class="holding-val">₹24,503</div>
-              <div class="holding-chg up">▲ +2.3%</div>
-            </div>
-          </div>
-          <div class="holding-row" onclick="showStockDetail('AAPL','NYSE')">
-            <div class="holding-sym-wrap">
-              <div class="holding-sym">AAPL</div>
-              <div class="holding-name">Apple Inc.</div>
-            </div>
-            <div class="holding-right">
-              <div class="holding-val">₹78,210</div>
-              <div class="holding-chg up">▲ +0.8%</div>
-            </div>
-          </div>
-          <div class="holding-row" onclick="showStockDetail('TSLA','NASDAQ')">
-            <div class="holding-sym-wrap">
-              <div class="holding-sym">TSLA</div>
-              <div class="holding-name">Tesla, Inc.</div>
-            </div>
-            <div class="holding-right">
-              <div class="holding-val">₹12,448</div>
-              <div class="holding-chg down">▼ -2.1%</div>
-            </div>
-          </div>
-          <div class="holding-row" onclick="showStockDetail('TCS.NS','NSE')">
-            <div class="holding-sym-wrap">
-              <div class="holding-sym">TCS</div>
-              <div class="holding-name">Tata Consultancy</div>
-            </div>
-            <div class="holding-right">
-              <div class="holding-val">₹8,289</div>
-              <div class="holding-chg up">▲ +0.5%</div>
-            </div>
-          </div>
+          <div class="section-empty">Loading holdings...</div>
         </div>
       </div>
 
@@ -1045,26 +1027,7 @@ html, body {
           <span style="cursor:pointer;color:var(--accent);font-size:16px" onclick="showPage('stocks')">+</span>
         </div>
         <div id="watchlist-list">
-          <div class="watch-row" onclick="showStockDetail('MSFT','NASDAQ')">
-            <span class="watch-sym">MSFT</span>
-            <span class="watch-price">$412.80</span>
-            <span class="watch-chg up">+1.5%</span>
-          </div>
-          <div class="watch-row" onclick="showStockDetail('NVDA','NASDAQ')">
-            <span class="watch-sym">NVDA</span>
-            <span class="watch-price">$875.60</span>
-            <span class="watch-chg up">+3.2%</span>
-          </div>
-          <div class="watch-row" onclick="showStockDetail('DBS.SI','SGX')">
-            <span class="watch-sym">DBS</span>
-            <span class="watch-price">S$33.21</span>
-            <span class="watch-chg up">+0.5%</span>
-          </div>
-          <div class="watch-row" onclick="showStockDetail('HSBA.L','LSE')">
-            <span class="watch-sym">HSBA</span>
-            <span class="watch-price">£6.78</span>
-            <span class="watch-chg down">-0.3%</span>
-          </div>
+          <div class="section-empty">Loading watchlist...</div>
         </div>
       </div>
     </div>
@@ -1085,7 +1048,7 @@ html, body {
             <div class="exch-tip-name" id="exch-name">NYSE</div>
             <div class="exch-tip-meta" id="exch-meta">New York Stock Exchange · USA</div>
           </div>
-          <div class="exch-tip-close" onclick="closeExchangeTooltip()">✕</div>
+          <div class="exch-tip-close" onclick="closeExchangeTooltip()" aria-label="Close exchange panel">✕</div>
         </div>
         <div class="exch-tip-stocks" id="exch-stocks"></div>
         <div class="exch-tip-footer">
@@ -1105,65 +1068,21 @@ html, body {
       <div class="panel-section">
         <div class="panel-sec-hdr"><span>Recent Orders</span></div>
         <div id="orders-list">
-          <div class="order-row">
-            <div class="order-top">
-              <span class="order-sym">RELIANCE</span>
-              <span class="order-type buy">BUY</span>
-            </div>
-            <div class="order-bot">
-              <span class="order-qty">10 shares · Market</span>
-              <span class="order-val">₹24,503</span>
-            </div>
-          </div>
-          <div class="order-row">
-            <div class="order-top">
-              <span class="order-sym">TSLA</span>
-              <span class="order-type sell">SELL</span>
-            </div>
-            <div class="order-bot">
-              <span class="order-qty">5 shares · Market</span>
-              <span class="order-val">$1,240.50</span>
-            </div>
-          </div>
-          <div class="order-row">
-            <div class="order-top">
-              <span class="order-sym">AAPL</span>
-              <span class="order-type buy">BUY</span>
-            </div>
-            <div class="order-bot">
-              <span class="order-qty">20 shares · Market</span>
-              <span class="order-val">$3,749.00</span>
-            </div>
-          </div>
-          <div class="order-row">
-            <div class="order-top">
-              <span class="order-sym">NVDA</span>
-              <span class="order-type buy">BUY</span>
-            </div>
-            <div class="order-bot">
-              <span class="order-qty">3 shares · Market</span>
-              <span class="order-val">$2,626.80</span>
-            </div>
-          </div>
+          <div class="section-empty">Loading orders...</div>
         </div>
       </div>
 
       <div class="panel-section">
         <div class="panel-sec-hdr"><span>Top Gainers</span></div>
         <div id="gainers-list">
-          <div class="watch-row" onclick="showStockDetail('NVDA','NASDAQ')"><span class="watch-sym">NVDA</span><span class="watch-price">$875.60</span><span class="watch-chg up">+3.2%</span></div>
-          <div class="watch-row" onclick="showStockDetail('META','NASDAQ')"><span class="watch-sym">META</span><span class="watch-price">$495.20</span><span class="watch-chg up">+2.4%</span></div>
-          <div class="watch-row" onclick="showStockDetail('RELIANCE.NS','NSE')"><span class="watch-sym">RELIANCE</span><span class="watch-price">₹2,450</span><span class="watch-chg up">+1.2%</span></div>
-          <div class="watch-row" onclick="showStockDetail('MSFT','NASDAQ')"><span class="watch-sym">MSFT</span><span class="watch-price">$412.80</span><span class="watch-chg up">+1.5%</span></div>
+          <div class="section-empty" style="padding:16px">Loading...</div>
         </div>
       </div>
 
       <div class="panel-section">
         <div class="panel-sec-hdr"><span>Top Losers</span></div>
         <div id="losers-list">
-          <div class="watch-row" onclick="showStockDetail('TSLA','NASDAQ')"><span class="watch-sym">TSLA</span><span class="watch-price">$248.10</span><span class="watch-chg down">-2.1%</span></div>
-          <div class="watch-row" onclick="showStockDetail('GOOGL','NASDAQ')"><span class="watch-sym">GOOGL</span><span class="watch-price">$163.50</span><span class="watch-chg down">-0.6%</span></div>
-          <div class="watch-row" onclick="showStockDetail('HSBA.L','LSE')"><span class="watch-sym">HSBA</span><span class="watch-price">£6.78</span><span class="watch-chg down">-0.3%</span></div>
+          <div class="section-empty" style="padding:16px">Loading...</div>
         </div>
       </div>
     </div>
@@ -1190,9 +1109,9 @@ html, body {
   <div class="stocks-toolbar">
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input class="search-input" id="stocks-search" type="text" placeholder="Search stocks, companies..." oninput="filterStocks()">
+      <input class="search-input" id="stocks-search" type="text" placeholder="Search stocks, companies..." oninput="onStocksSearchInput()" aria-label="Search stocks">
     </div>
-    <select class="filter-select" id="filter-exchange" onchange="filterStocks()">
+    <select class="filter-select" id="filter-exchange" onchange="onFilterChange()" aria-label="Filter by exchange">
       <option value="">All Exchanges</option>
       <option value="NSE">NSE · India</option>
       <option value="NYSE">NYSE · USA</option>
@@ -1202,7 +1121,7 @@ html, body {
       <option value="HKEX">HKEX · Hong Kong</option>
       <option value="TSE">TSE · Japan</option>
     </select>
-    <select class="filter-select" id="filter-sector" onchange="filterStocks()">
+    <select class="filter-select" id="filter-sector" onchange="onFilterChange()" aria-label="Filter by sector">
       <option value="">All Sectors</option>
       <option>Technology</option>
       <option>Finance</option>
@@ -1225,6 +1144,9 @@ html, body {
     </div>
     <div class="stocks-list" id="stocks-list">
       <!-- populated by JS -->
+    </div>
+    <div id="stocks-load-more-row" style="display:none;padding:14px 24px;text-align:center;border-top:1px solid var(--border)">
+      <button class="btn btn-secondary btn-sm" onclick="loadMoreStocks()" id="stocks-load-more-btn">Load more stocks</button>
     </div>
   </div>
 </div>
@@ -1375,13 +1297,20 @@ html, body {
         </div>
 
         <div class="trade-label">ORDER TYPE</div>
-        <select class="trade-type-select" id="order-type" onchange="updateTradeSummary()">
+        <select class="trade-type-select" id="order-type" onchange="onOrderTypeChange()">
           <option value="market">Market Order</option>
           <option value="limit">Limit Order</option>
         </select>
 
         <div class="trade-label">QUANTITY</div>
-        <input class="trade-input" type="number" id="trade-qty" value="1" min="1" oninput="updateTradeSummary()">
+        <input class="trade-input" type="number" id="trade-qty" value="1" min="1" step="1" oninput="updateTradeSummary()" aria-label="Trade quantity" aria-describedby="trade-qty-err">
+        <div id="trade-qty-err" role="alert" aria-live="polite" style="display:none;color:var(--red);font-size:11px;font-family:var(--font-mono);margin-top:4px">Enter a whole number &gt; 0</div>
+
+        <div id="limit-price-row" style="display:none">
+          <div class="trade-label" style="margin-top:12px">LIMIT PRICE</div>
+          <input class="trade-input" type="number" id="trade-limit-price" min="0.01" step="0.01" placeholder="Enter limit price" oninput="updateTradeSummary()" aria-label="Limit price" aria-describedby="trade-limit-err">
+          <div id="trade-limit-err" role="alert" aria-live="polite" style="display:none;color:var(--red);font-size:11px;font-family:var(--font-mono);margin-top:4px">Limit price must be &gt; 0</div>
+        </div>
 
         <div class="trade-summary">
           <div class="trade-sum-row">
@@ -1409,7 +1338,7 @@ html, body {
 
       <!-- Watchlist add -->
       <div style="margin-top:16px">
-        <button class="btn btn-secondary" style="width:100%;justify-content:center;border-radius:var(--radius)" onclick="addToWatchlist()">
+        <button class="btn btn-secondary" style="width:100%;justify-content:center;border-radius:var(--radius)" onclick="addToWatchlist()" aria-label="Add current stock to watchlist">
           ☆ Add to Watchlist
         </button>
       </div>
@@ -1435,6 +1364,33 @@ let currentDetailPrice = 2450.30;
 let isFetchingStocks = false;
 const stockAnalyticsBySymbol = {};
 let analyticsRequested = false;
+// Pagination state
+let stocksCurrentPage = 1;
+const STOCKS_PER_PAGE = 50;
+let stocksTotalFromServer = 0;
+// Refresh intervals
+let dashboardRefreshInterval = null;
+let detailRefreshInterval = null;
+
+// Central fetch wrapper — auto-logout on 401
+async function apiFetch(url, options = {}) {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    handleLogout();
+    showToast('Session expired. Please sign in again.', 'error');
+    showAuth();
+    throw new Error('Unauthorized');
+  }
+  return res;
+}
+
+function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
 
 const EXCHANGES = {
   NSE:    { lat: 19.0760, lng: 72.8777, label: 'NSE', meta: 'National Stock Exchange · India', color: '#f5a623', market: 'INR' },
@@ -1625,7 +1581,7 @@ function renderWatchlist(rows) {
       <div class="watch-row" onclick="showStockDetail('${escapeHtml(symbol)}','${escapeHtml(exchange)}','${escapeHtml(w.stock_id)}')">
         <span class="watch-sym">${escapeHtml(symbol.split('.')[0])}</span>
         <span class="watch-price">${formatMoney(w.current_price, w.listing_currency)}</span>
-        <button class="btn btn-ghost btn-sm" style="padding:2px 8px;border-radius:4px" onclick="removeFromWatchlist('${escapeHtml(w.stock_id)}','${escapeHtml(symbol)}',event)">×</button>
+        <button class="btn btn-ghost btn-sm" style="padding:2px 8px;border-radius:4px" onclick="removeFromWatchlist('${escapeHtml(w.stock_id)}','${escapeHtml(symbol)}',event)" aria-label="Remove ${escapeHtml(symbol.split('.')[0])} from watchlist">×</button>
       </div>
     `;
   }).join('');
@@ -1766,7 +1722,7 @@ async function hydrateLiveAnalytics() {
 }
 
 async function fetchWalletBalance() {
-  const res = await fetch(`${API}/api/wallet/balance`, { headers: getAuthHeaders() });
+  const res = await apiFetch(`${API}/api/wallet/balance`, { headers: getAuthHeaders() });
   const json = await res.json();
   const payload = getResponseData(json);
   if (!res.ok || !payload) throw new Error(getResponseError(json, 'Failed to fetch wallet'));
@@ -1775,7 +1731,7 @@ async function fetchWalletBalance() {
 }
 
 async function fetchPortfolio() {
-  const res = await fetch(`${API}/api/portfolio`, { headers: getAuthHeaders() });
+  const res = await apiFetch(`${API}/api/portfolio`, { headers: getAuthHeaders() });
   const json = await res.json();
   const payload = getResponseData(json);
   if (!res.ok || !payload) throw new Error(getResponseError(json, 'Failed to fetch portfolio'));
@@ -1784,7 +1740,7 @@ async function fetchPortfolio() {
 }
 
 async function fetchWatchlist() {
-  const res = await fetch(`${API}/api/watchlist`, { headers: getAuthHeaders() });
+  const res = await apiFetch(`${API}/api/watchlist`, { headers: getAuthHeaders() });
   const json = await res.json();
   const payload = getResponseData(json);
   if (!res.ok || !Array.isArray(payload)) throw new Error(getResponseError(json, 'Failed to fetch watchlist'));
@@ -1793,7 +1749,7 @@ async function fetchWatchlist() {
 }
 
 async function fetchOrderHistory() {
-  const res = await fetch(`${API}/api/orders/history`, { headers: getAuthHeaders() });
+  const res = await apiFetch(`${API}/api/orders/history`, { headers: getAuthHeaders() });
   const json = await res.json();
   const payload = getResponseData(json);
   const rows = payload?.orders;
@@ -1804,22 +1760,40 @@ async function fetchOrderHistory() {
 
 async function loadOrdersPage() {
   if (!authState.loggedIn) return;
+  const list = document.getElementById('orders-page-list');
+  if (list) list.innerHTML = '<div class="section-empty">Loading orders...</div>';
   try {
     const rows = await fetchOrderHistory();
     renderOrdersPage(rows);
     await fetchWalletBalance();
   } catch (err) {
-    showToast(err.message || 'Unable to load orders page', 'error');
+    if (err.message !== 'Unauthorized') {
+      if (list) list.innerHTML = `
+        <div class="section-empty" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 16px">
+          <span>Failed to load orders</span>
+          <button class="btn btn-secondary btn-sm" onclick="loadOrdersPage()">Retry</button>
+        </div>`;
+      showToast(err.message || 'Unable to load orders page', 'error');
+    }
   }
 }
 
 async function loadWalletPage() {
   if (!authState.loggedIn) return;
+  const txList = document.getElementById('wallet-tx-list');
+  if (txList) txList.innerHTML = '<div class="section-empty">Loading transactions...</div>';
   try {
     const wallet = await fetchWalletBalance();
     renderWalletTransactions(wallet.recentTransactions || [], wallet.homeCurrency || authState.user?.homeCurrency || 'INR');
   } catch (err) {
-    showToast(err.message || 'Unable to load wallet page', 'error');
+    if (err.message !== 'Unauthorized') {
+      if (txList) txList.innerHTML = `
+        <div class="section-empty" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 16px">
+          <span>Failed to load wallet</span>
+          <button class="btn btn-secondary btn-sm" onclick="loadWalletPage()">Retry</button>
+        </div>`;
+      showToast(err.message || 'Unable to load wallet page', 'error');
+    }
   }
 }
 
@@ -1833,7 +1807,7 @@ async function walletAction(type) {
   }
 
   try {
-    const res = await fetch(`${API}/api/wallet/${type === 'deposit' ? 'deposit' : 'withdraw'}`, {
+    const res = await apiFetch(`${API}/api/wallet/${type === 'deposit' ? 'deposit' : 'withdraw'}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ amount }),
@@ -1846,21 +1820,66 @@ async function walletAction(type) {
     showToast(`${type === 'deposit' ? 'Deposit' : 'Withdraw'} successful`, 'success');
     if (amtEl) amtEl.value = '';
     await Promise.all([loadWalletPage(), loadDashboardData()]);
-  } catch {
-    showToast(`Unable to ${type} right now`, 'error');
+  } catch (err) {
+    if (err.message !== 'Unauthorized') showToast(`Unable to ${type} right now`, 'error');
   }
 }
 
 async function loadDashboardData() {
   if (!authState.loggedIn) return;
   setUserAvatar();
-  try {
-    await Promise.all([fetchWalletBalance(), fetchPortfolio(), fetchWatchlist(), fetchOrderHistory()]);
-    if (!allStocks.length) await fetchRealStocks();
-    hydrateLiveAnalytics();
-  } catch (err) {
-    showToast(err.message || 'Unable to load dashboard data', 'error');
+
+  // Show loading states in each section
+  const holdList = document.getElementById('holdings-list');
+  const watchList = document.getElementById('watchlist-list');
+  const ordList   = document.getElementById('orders-list');
+  if (holdList && holdList.dataset.loaded !== '1') holdList.innerHTML = '<div class="section-empty">Loading holdings...</div>';
+  if (watchList && watchList.dataset.loaded !== '1') watchList.innerHTML = '<div class="section-empty">Loading watchlist...</div>';
+  if (ordList && ordList.dataset.loaded !== '1') ordList.innerHTML = '<div class="section-empty">Loading orders...</div>';
+
+  const results = await Promise.allSettled([
+    fetchWalletBalance(),
+    fetchPortfolio(),
+    fetchWatchlist(),
+    fetchOrderHistory(),
+  ]);
+
+  // Mark loaded and show retry for any section that failed
+  const sectionErrors = [
+    { idx: 1, el: 'holdings-list',  label: 'loadPortfolioSection()' },
+    { idx: 2, el: 'watchlist-list', label: 'loadWatchlistSection()' },
+    { idx: 3, el: 'orders-list',    label: 'loadOrdersSection()' },
+  ];
+  sectionErrors.forEach(({ idx, el, label }) => {
+    if (results[idx].status === 'rejected') {
+      const node = document.getElementById(el);
+      if (node) node.innerHTML = `
+        <div class="section-empty" style="display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 12px">
+          <span>Failed to load</span>
+          <button class="btn btn-secondary btn-sm" onclick="${label}">Retry</button>
+        </div>`;
+    } else if (results[idx].status === 'fulfilled') {
+      const node = document.getElementById(el);
+      if (node) node.dataset.loaded = '1';
+    }
+  });
+
+  if (results[0].status === 'rejected') {
+    showToast(results[0].reason?.message || 'Unable to load wallet', 'error');
   }
+
+  if (!allStocks.length) await fetchRealStocks();
+  hydrateLiveAnalytics();
+}
+
+async function loadPortfolioSection() {
+  try { await fetchPortfolio(); } catch { showToast('Unable to load holdings', 'error'); }
+}
+async function loadWatchlistSection() {
+  try { await fetchWatchlist(); } catch { showToast('Unable to load watchlist', 'error'); }
+}
+async function loadOrdersSection() {
+  try { await fetchOrderHistory(); } catch { showToast('Unable to load orders', 'error'); }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -1893,11 +1912,20 @@ function showPage(page) {
   if (page === 'dashboard') {
     initDashboardGlobe();
     setTimeout(hideGlobeHint, 6000);
+    // Clear any existing interval and start fresh
+    if (dashboardRefreshInterval) clearInterval(dashboardRefreshInterval);
     loadDashboardData();
+    dashboardRefreshInterval = setInterval(() => {
+      if (authState.loggedIn) loadDashboardData();
+    }, 10000);
+  }
+  if (page !== 'dashboard' && dashboardRefreshInterval) {
+    clearInterval(dashboardRefreshInterval);
+    dashboardRefreshInterval = null;
   }
   if (page === 'stocks') {
     if (!allStocks.length) fetchRealStocks();
-    renderStocksList();
+    else renderStocksList();
   }
   if (page === 'orders') loadOrdersPage();
   if (page === 'wallet') loadWalletPage();
@@ -1909,6 +1937,10 @@ function showAuth(mode = 'login') {
 }
 
 function goBackFromDetail() {
+  if (detailRefreshInterval) {
+    clearInterval(detailRefreshInterval);
+    detailRefreshInterval = null;
+  }
   showPage(previousPage);
 }
 
@@ -2016,10 +2048,6 @@ async function handleRegister() {
     });
     const data = await res.json();
     if (res.ok) {
-      const demoUsers = JSON.parse(localStorage.getItem('sx_demo_users') || '{}');
-      const ph = await hashPass(pass);
-      demoUsers[email.toLowerCase()] = { name, ph };
-      localStorage.setItem('sx_demo_users', JSON.stringify(demoUsers));
       showToast('Account created! Please sign in.', 'success');
       switchAuthTab('login');
     } else {
@@ -2164,63 +2192,97 @@ function renderStocksList() {
 
   list.innerHTML = filtered.map(s => {
     const analytics = stockAnalyticsBySymbol[s.sym];
-    const chgText = analytics ? formatChg(analytics.pct) : s.chg;
-    const isUp = analytics ? analytics.pct >= 0 : s.up;
-    const volText = analytics?.volume ? `${(analytics.volume / 1000000).toFixed(2)}M` : randomVol();
-    const bars = generateMiniSparkBars(isUp);
+    const chgText = analytics ? formatChg(analytics.pct) : '—';
+    const isUp = analytics ? analytics.pct >= 0 : true;
+    const volText = analytics?.volume ? `${(analytics.volume / 1000000).toFixed(2)}M` : '—';
     return `
-    <div class="stock-row" onclick="showStockDetail('${s.sym}','${s.exchange}','${s.stockId || ''}')">
+    <div class="stock-row" onclick="showStockDetail('${escapeHtml(s.sym)}','${escapeHtml(s.exchange)}','${escapeHtml(s.stockId || '')}')">
       <div class="stock-sym-col">
         <div>
-          <span class="stock-sym-main">${s.sym.split('.')[0]}</span>
-          <span class="stock-exchange-badge">${s.exchange}</span>
+          <span class="stock-sym-main">${escapeHtml(s.sym.split('.')[0])}</span>
+          <span class="stock-exchange-badge">${escapeHtml(s.exchange)}</span>
         </div>
-        <div class="stock-sym-sub">${s.name}</div>
+        <div class="stock-sym-sub">${escapeHtml(s.name)}</div>
       </div>
-      <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">${s.exchange}</div>
-      <div class="stock-price">${s.price}</div>
-      <div class="stock-change ${isUp?'up':'down'}">${chgText}</div>
-      <div class="vol-val">${volText}</div>
-      <div class="spark-bars">${bars}</div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">${escapeHtml(s.exchange)}</div>
+      <div class="stock-price">${escapeHtml(s.price)}</div>
+      <div class="stock-change ${analytics ? (isUp?'up':'down') : ''}">${escapeHtml(chgText)}</div>
+      <div class="vol-val">${escapeHtml(volText)}</div>
+      <div class="spark-bars" aria-hidden="true"></div>
     </div>`;
   }).join('');
 }
 
-async function fetchRealStocks() {
+async function fetchRealStocks({ search = '', exchange = '', sector = '', page = 1, append = false } = {}) {
   if (isFetchingStocks) return;
   isFetchingStocks = true;
+  const list = document.getElementById('stocks-list');
+  if (!append && list) list.innerHTML = '<div class="section-empty">Loading stocks...</div>';
+  document.getElementById('stocks-load-more-row').style.display = 'none';
   try {
     const token = authState.token || localStorage.getItem('sx_token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    const res = await fetch(`${API}/api/stocks?limit=500&page=1`, { headers });
-    if (res.ok) {
-      const json = await res.json();
-      const rows = getResponseData(json)?.stocks || [];
-      if (rows.length > 0) {
-        const mapped = rows.map(s => ({
-          stockId: s.id,
-          sym: s.symbol,
-          name: s.company_name || s.symbol,
-          price: formatPrice(s.current_price, s.listing_currency),
-          currency: s.listing_currency,
-          chg: '—',
-          up: true,
-          exchange: s.exchange || 'NSE',
-          sector: s.sector || 'Mixed',
-        }));
-        allStocks = mapped;
-        renderStocksList();
-        hydrateLiveAnalytics();
-      }
+    const params = new URLSearchParams({ limit: STOCKS_PER_PAGE, page });
+    if (search) params.set('search', search);
+    if (exchange) params.set('exchange', exchange);
+    if (sector) params.set('sector', sector);
+    const res = await fetch(`${API}/api/stocks?${params}`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch stocks');
+    const json = await res.json();
+    const data = getResponseData(json);
+    const rows = data?.stocks || [];
+    stocksTotalFromServer = data?.total || rows.length;
+
+    const mapped = rows.map(s => ({
+      stockId: s.id,
+      sym: s.symbol,
+      name: s.company_name || s.symbol,
+      price: formatPrice(s.current_price, s.listing_currency),
+      currency: s.listing_currency,
+      chg: '—',
+      up: true,
+      exchange: s.exchange || 'NSE',
+      sector: s.sector || 'Mixed',
+    }));
+
+    if (append) {
+      allStocks = [...allStocks, ...mapped];
+    } else {
+      allStocks = mapped;
     }
-  } catch {
-    if (!allStocks.length) {
-      allStocks = [...DEMO_STOCKS];
-      renderStocksList();
+
+    stocksCurrentPage = page;
+    renderStocksList();
+
+    // Show load-more if server has more records
+    const loadMoreRow = document.getElementById('stocks-load-more-row');
+    if (loadMoreRow) {
+      loadMoreRow.style.display = allStocks.length < stocksTotalFromServer ? 'block' : 'none';
+    }
+
+    if (!append) hydrateLiveAnalytics();
+  } catch (err) {
+    if (!append) {
+      allStocks = [];
+      if (list) list.innerHTML = `
+        <div class="section-empty" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 16px">
+          <span>Unable to load stocks</span>
+          <button class="btn btn-secondary btn-sm" onclick="fetchRealStocks()">Retry</button>
+        </div>`;
     }
   } finally {
     isFetchingStocks = false;
   }
+}
+
+async function loadMoreStocks() {
+  const btn = document.getElementById('stocks-load-more-btn');
+  if (btn) { btn.textContent = 'Loading...'; btn.disabled = true; }
+  const search = (document.getElementById('stocks-search')?.value || '').trim();
+  const exchange = document.getElementById('filter-exchange')?.value || '';
+  const sector = document.getElementById('filter-sector')?.value || '';
+  await fetchRealStocks({ search, exchange, sector, page: stocksCurrentPage + 1, append: true });
+  if (btn) { btn.textContent = 'Load more stocks'; btn.disabled = false; }
 }
 
 function formatPrice(p, currency) {
@@ -2245,7 +2307,33 @@ function generateMiniSparkBars(isUp) {
   }).join('');
 }
 
-function filterStocks() { renderStocksList(); }
+function filterStocks() {
+  // Client-side filter on already-loaded stocks for immediate feedback
+  renderStocksList();
+}
+
+const debouncedFetchStocks = debounce(function() {
+  const search = (document.getElementById('stocks-search')?.value || '').trim();
+  const exchange = document.getElementById('filter-exchange')?.value || '';
+  const sector = document.getElementById('filter-sector')?.value || '';
+  allStocks = [];
+  analyticsRequested = false;
+  fetchRealStocks({ search, exchange, sector, page: 1 });
+}, 400);
+
+function onStocksSearchInput() {
+  filterStocks(); // immediate client-side filter
+  debouncedFetchStocks(); // debounced backend call
+}
+
+function onFilterChange() {
+  const search = (document.getElementById('stocks-search')?.value || '').trim();
+  const exchange = document.getElementById('filter-exchange')?.value || '';
+  const sector = document.getElementById('filter-sector')?.value || '';
+  allStocks = [];
+  analyticsRequested = false;
+  fetchRealStocks({ search, exchange, sector, page: 1 });
+}
 
 // ─────────────────────────────────────────────────────────
 // STOCK DETAIL
@@ -2256,87 +2344,99 @@ async function showStockDetail(symbol, exchange, stockId = null) {
   currentDetailStockId = stockId;
   currentChartHistory = [];
 
-  document.getElementById('detail-symbol').textContent = symbol.split('.')[0];
-  document.getElementById('detail-exchange').textContent = `${exchange} · ${getExchangeCountry(exchange)} · Equity`;
-
   const sym = symbol.split('.')[0];
-  const stockData = findDemoStock(symbol, exchange);
-  if (stockData) {
-    const price = parsePriceNum(stockData.price);
-    currentDetailPrice = price;
-    currentDetailCurrency = exchange === 'NSE' ? 'INR' : exchange === 'LSE' ? 'GBP' : exchange === 'SGX' ? 'SGD' : exchange === 'HKEX' ? 'HKD' : exchange === 'TSE' ? 'JPY' : 'USD';
-    document.getElementById('detail-price').textContent = stockData.price;
-    document.getElementById('sum-price').textContent = stockData.price;
-    document.getElementById('sum-total').textContent = stockData.price;
-    const up = stockData.up;
-    document.getElementById('detail-change-abs').className = `price-change-abs ${up?'up':'down'}`;
-    document.getElementById('detail-change-pct').className = `price-change-pct ${up?'up':'down'}`;
-    document.getElementById('detail-change-pct').textContent = `(${stockData.chg})`;
-    document.getElementById('trade-submit-btn').textContent = `${currentTradeTab === 'buy' ? 'Buy' : 'Sell'} ${sym}`;
-  }
-
-  document.getElementById('m-high').textContent = inflatePrice(currentDetailPrice, 0.008);
-  document.getElementById('m-low').textContent = deflatePrice(currentDetailPrice, 0.012);
-  document.getElementById('m-range').textContent = `${deflatePrice(currentDetailPrice, 0.15)} – ${inflatePrice(currentDetailPrice, 0.12)}`;
+  document.getElementById('detail-symbol').textContent = sym;
+  document.getElementById('detail-exchange').textContent = `${exchange} · ${getExchangeCountry(exchange)} · Equity`;
+  document.getElementById('detail-price').textContent = '—';
+  document.getElementById('sum-price').textContent = '—';
+  document.getElementById('sum-total').textContent = '—';
+  document.getElementById('detail-change-abs').textContent = '';
+  document.getElementById('detail-change-pct').textContent = '(—)';
+  document.getElementById('m-high').textContent = '—';
+  document.getElementById('m-low').textContent = '—';
+  document.getElementById('m-vol').textContent = '—';
+  document.getElementById('m-range').textContent = '—';
+  document.getElementById('trade-submit-btn').textContent = `${currentTradeTab === 'buy' ? 'Buy' : 'Sell'} ${sym}`;
 
   showPage('stock-detail');
   drawPriceChart();
 
-  // Try API
+  // Clear any previous detail interval
+  if (detailRefreshInterval) { clearInterval(detailRefreshInterval); detailRefreshInterval = null; }
+
+  await refreshDetailPrice(symbol, exchange);
+
+  // Poll price every 10 s while on this page
+  detailRefreshInterval = setInterval(async () => {
+    const dp = document.getElementById('page-stock-detail');
+    if (!dp || dp.style.display === 'none') {
+      clearInterval(detailRefreshInterval);
+      detailRefreshInterval = null;
+      return;
+    }
+    await refreshDetailPrice(symbol, exchange);
+  }, 10000);
+}
+
+async function refreshDetailPrice(symbol, exchange) {
   try {
     const token = authState.token || localStorage.getItem('sx_token');
     const res = await fetch(`${API}/api/stocks/${encodeURIComponent(symbol)}`, {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
-    if (res.ok) {
-      const json = await res.json();
-      const payload = getResponseData(json);
-      const stock = payload?.stock;
-      const history = payload?.priceHistory || [];
+    if (res.status === 401) { handleLogout(); showAuth(); return; }
+    if (!res.ok) return;
+    const json = await res.json();
+    const payload = getResponseData(json);
+    const stock = payload?.stock;
+    const history = payload?.priceHistory || [];
 
-      if (stock?.id) currentDetailStockId = stock.id;
-      if (stock?.listing_currency) currentDetailCurrency = stock.listing_currency;
+    if (stock?.id) currentDetailStockId = stock.id;
+    if (stock?.listing_currency) currentDetailCurrency = stock.listing_currency;
 
-      if (stock?.current_price != null) {
-        const p = Number(stock.current_price);
-        currentDetailPrice = p;
-        document.getElementById('detail-price').textContent = formatMoney(p, currentDetailCurrency);
-        document.getElementById('sum-price').textContent = formatMoney(p, currentDetailCurrency);
-      }
-
-      if (history.length) {
-        currentChartHistory = history.map((h) => ({
-          date: h.date,
-          open: Number(h.open),
-          high: Number(h.high),
-          low: Number(h.low),
-          close: Number(h.close),
-          volume: Number(h.volume || 0),
-        })).filter((h) => Number.isFinite(h.close));
-
-        const latest = currentChartHistory[currentChartHistory.length - 1];
-        const highs = currentChartHistory.map((h) => h.high).filter(Number.isFinite);
-        const lows = currentChartHistory.map((h) => h.low).filter(Number.isFinite);
-
-        if (latest) {
-          document.getElementById('m-high').textContent = formatMoney(latest.high, currentDetailCurrency);
-          document.getElementById('m-low').textContent = formatMoney(latest.low, currentDetailCurrency);
-          document.getElementById('m-vol').textContent = `${(latest.volume / 1000000).toFixed(2)}M`;
-        }
-        if (highs.length && lows.length) {
-          document.getElementById('m-range').textContent = `${formatMoney(Math.min(...lows), currentDetailCurrency)} - ${formatMoney(Math.max(...highs), currentDetailCurrency)}`;
-        }
-      }
-
-      if (!currentDetailStockId) {
-        const resolved = await resolveStockIdBySymbol(symbol);
-        if (resolved) currentDetailStockId = resolved;
-      }
-
-      drawPriceChart();
-      updateTradeSummary();
+    if (stock?.current_price != null) {
+      const p = Number(stock.current_price);
+      currentDetailPrice = p;
+      document.getElementById('detail-price').textContent = formatMoney(p, currentDetailCurrency);
+      document.getElementById('sum-price').textContent = formatMoney(p, currentDetailCurrency);
     }
-  } catch {}
+
+    if (stock?.sector) document.getElementById('comp-sector').textContent = stock.sector;
+
+    if (history.length) {
+      currentChartHistory = history.map((h) => ({
+        date: h.date,
+        open: Number(h.open),
+        high: Number(h.high),
+        low: Number(h.low),
+        close: Number(h.close),
+        volume: Number(h.volume || 0),
+      })).filter((h) => Number.isFinite(h.close));
+
+      const latest = currentChartHistory[currentChartHistory.length - 1];
+      const highs = currentChartHistory.map((h) => h.high).filter(Number.isFinite);
+      const lows = currentChartHistory.map((h) => h.low).filter(Number.isFinite);
+
+      if (latest) {
+        document.getElementById('m-high').textContent = formatMoney(latest.high, currentDetailCurrency);
+        document.getElementById('m-low').textContent = formatMoney(latest.low, currentDetailCurrency);
+        document.getElementById('m-vol').textContent = `${(latest.volume / 1000000).toFixed(2)}M`;
+      }
+      if (highs.length && lows.length) {
+        document.getElementById('m-range').textContent = `${formatMoney(Math.min(...lows), currentDetailCurrency)} — ${formatMoney(Math.max(...highs), currentDetailCurrency)}`;
+      }
+    }
+
+    if (!currentDetailStockId) {
+      const resolved = await resolveStockIdBySymbol(symbol);
+      if (resolved) currentDetailStockId = resolved;
+    }
+
+    drawPriceChart();
+    updateTradeSummary();
+  } catch {
+    // Non-blocking; price updates will retry on next interval
+  }
 }
 
 function findDemoStock(sym, exch) {
@@ -2373,21 +2473,58 @@ function setTradeTab(tab) {
 }
 
 function updateTradeSummary() {
-  const qty = parseInt(document.getElementById('trade-qty')?.value) || 1;
+  const qty = parseInt(document.getElementById('trade-qty')?.value, 10) || 1;
   document.getElementById('sum-qty').textContent = qty;
-  const priceStr = document.getElementById('sum-price').textContent;
+  const type = document.getElementById('order-type')?.value || 'market';
+  const priceStr = type === 'limit'
+    ? (document.getElementById('trade-limit-price')?.value ? formatMoney(document.getElementById('trade-limit-price').value, currentDetailCurrency) : document.getElementById('sum-price').textContent)
+    : document.getElementById('sum-price').textContent;
   const price = parsePriceNum(priceStr);
   const total = (price * qty).toLocaleString('en-IN', { maximumFractionDigits: 2 });
-  // Preserve currency symbol
-  const currency = priceStr.match(/^[₹£$S]+/)?.[0] || '$';
+  const currency = priceStr.match(/^[₹£$S¥HK]+/)?.[0] || '';
   document.getElementById('sum-total').textContent = currency + total;
 }
 
+function onOrderTypeChange() {
+  const type = document.getElementById('order-type')?.value;
+  const limitRow = document.getElementById('limit-price-row');
+  if (limitRow) {
+    limitRow.style.display = type === 'limit' ? 'block' : 'none';
+    if (type === 'limit') {
+      const lpInput = document.getElementById('trade-limit-price');
+      if (lpInput && !lpInput.value && currentDetailPrice) lpInput.value = currentDetailPrice.toFixed(2);
+    }
+  }
+  updateTradeSummary();
+}
+
 async function placeOrder() {
-  const qty = parseInt(document.getElementById('trade-qty')?.value) || 1;
+  const qtyRaw = document.getElementById('trade-qty')?.value;
+  const qty = parseInt(qtyRaw, 10);
   const type = document.getElementById('order-type')?.value || 'market';
   const sym = document.getElementById('detail-symbol').textContent;
   const btn = document.getElementById('trade-submit-btn');
+  const qtyErr = document.getElementById('trade-qty-err');
+
+  // Validate quantity
+  if (!Number.isInteger(qty) || qty <= 0) {
+    if (qtyErr) qtyErr.style.display = 'block';
+    return;
+  }
+  if (qtyErr) qtyErr.style.display = 'none';
+
+  // Validate limit price
+  let limitPrice = null;
+  if (type === 'limit') {
+    const limitRaw = document.getElementById('trade-limit-price')?.value;
+    limitPrice = parseFloat(limitRaw);
+    const limitErr = document.getElementById('trade-limit-err');
+    if (!Number.isFinite(limitPrice) || limitPrice <= 0) {
+      if (limitErr) limitErr.style.display = 'block';
+      return;
+    }
+    if (limitErr) limitErr.style.display = 'none';
+  }
 
   if (!authState.loggedIn) { showToast('Please log in to trade', 'error'); showAuth(); return; }
   if (!currentDetailStockId) {
@@ -2406,11 +2543,11 @@ async function placeOrder() {
       side: currentTradeTab,
       quantity: qty,
     };
-    if (type === 'limit') payload.limitPrice = currentDetailPrice;
+    if (type === 'limit') payload.limitPrice = limitPrice;
 
-    const res = await fetch(`${API}/api/orders`, {
+    const res = await apiFetch(`${API}/api/orders`, {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${authState.token}` },
+      headers: { 'Content-Type':'application/json', ...getAuthHeaders() },
       body: JSON.stringify(payload)
     });
     if (res.ok) {
@@ -2420,8 +2557,8 @@ async function placeOrder() {
       const d = await res.json();
       showToast(getResponseError(d, 'Order failed — check balance'), 'error');
     }
-  } catch {
-    showToast('Unable to place order right now', 'error');
+  } catch (err) {
+    if (err.message !== 'Unauthorized') showToast('Unable to place order right now', 'error');
   }
   btn.textContent = `${currentTradeTab === 'buy' ? 'Buy' : 'Sell'} ${sym}`;
   btn.disabled = false;
@@ -2438,7 +2575,7 @@ async function addToWatchlist() {
   }
 
   try {
-    const res = await fetch(`${API}/api/watchlist`, {
+    const res = await apiFetch(`${API}/api/watchlist`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ stockId: currentDetailStockId }),
@@ -2450,8 +2587,8 @@ async function addToWatchlist() {
     }
     showToast(`☆ ${currentDetailSymbol.split('.')[0]} added to watchlist`, 'success');
     await fetchWatchlist();
-  } catch {
-    showToast('Unable to add to watchlist right now', 'error');
+  } catch (err) {
+    if (err.message !== 'Unauthorized') showToast('Unable to add to watchlist right now', 'error');
   }
 }
 
@@ -2462,7 +2599,7 @@ async function removeFromWatchlist(stockId, symbol, ev) {
   }
   if (!authState.loggedIn) { showAuth(); return; }
   try {
-    const res = await fetch(`${API}/api/watchlist/${encodeURIComponent(stockId)}`, {
+    const res = await apiFetch(`${API}/api/watchlist/${encodeURIComponent(stockId)}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
     });
@@ -2473,8 +2610,8 @@ async function removeFromWatchlist(stockId, symbol, ev) {
     }
     showToast(`Removed ${symbol.split('.')[0]} from watchlist`, 'info');
     await fetchWatchlist();
-  } catch {
-    showToast('Unable to remove watchlist item right now', 'error');
+  } catch (err) {
+    if (err.message !== 'Unauthorized') showToast('Unable to remove watchlist item right now', 'error');
   }
 }
 
