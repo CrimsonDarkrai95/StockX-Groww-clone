@@ -991,7 +991,7 @@ html, body {
       <div class="panel-section">
         <div class="panel-sec-hdr">
           <span>Holdings</span>
-          <span class="accent">4</span>
+          <span class="accent" id="holdings-count">4</span>
         </div>
         <div id="holdings-list">
           <div class="holding-row" onclick="showStockDetail('RELIANCE.NS','NSE')">
@@ -1179,7 +1179,7 @@ html, body {
       <div class="dash-nav-link" onclick="showToast('Coming soon','info')">Wallet</div>
     </div>
     <div class="dash-nav-right">
-      <div class="nav-wallet-chip">💰 <span class="green">₹45,230</span></div>
+      <div class="nav-wallet-chip">💰 <span class="green" id="nav-wallet-bal-stocks">₹45,230</span></div>
       <button class="btn btn-ghost btn-sm" onclick="handleLogout()">Logout</button>
     </div>
   </nav>
@@ -1345,7 +1345,7 @@ html, body {
         </button>
 
         <div style="margin-top:12px;font-family:var(--font-mono);font-size:10px;color:var(--muted);text-align:center;line-height:1.5">
-          Available balance: <span style="color:var(--text)">₹45,230</span>
+          Available balance: <span style="color:var(--text)" id="detail-available-balance">₹45,230</span>
         </div>
       </div>
 
@@ -1367,10 +1367,14 @@ html, body {
 const API = 'https://stockx-groww-clone-production.up.railway.app';
 let authState = { loggedIn: false, token: null, user: null };
 let currentDetailSymbol = '';
+let currentDetailStockId = null;
+let currentDetailCurrency = 'INR';
+let currentChartHistory = [];
 let previousPage = 'dashboard';
 let globeInst = null;
 let currentTradeTab = 'buy';
 let currentDetailPrice = 2450.30;
+let isFetchingStocks = false;
 
 const EXCHANGES = {
   NSE:    { lat: 19.0760, lng: 72.8777, label: 'NSE', meta: 'National Stock Exchange · India', color: '#f5a623', market: 'INR' },
@@ -1445,6 +1449,197 @@ const DEMO_STOCKS = [
   ...EXCHANGE_STOCKS.TSE.map(s=>({...s, exchange:'TSE', sector:'Industrial'})),
 ];
 
+function getAuthHeaders(extra = {}) {
+  const token = authState.token || localStorage.getItem('sx_token');
+  return token ? { ...extra, Authorization: `Bearer ${token}` } : { ...extra };
+}
+
+function getResponseData(json) {
+  return json && typeof json === 'object' && json.data !== undefined ? json.data : json;
+}
+
+function getResponseError(json, fallback = 'Request failed') {
+  return json?.error || json?.message || fallback;
+}
+
+function escapeHtml(val) {
+  return String(val ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function formatMoney(value, currency = 'INR') {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '—';
+  const symbolMap = { INR: '₹', USD: '$', GBP: '£', SGD: 'S$', HKD: 'HK$', JPY: '¥' };
+  const symbol = symbolMap[currency] || '';
+  return `${symbol}${n.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+}
+
+function setWalletInUi(balance, currency = 'INR') {
+  const text = formatMoney(balance, currency);
+  const ids = ['nav-wallet-bal', 'nav-wallet-bal-stocks', 'detail-available-balance'];
+  ids.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+  });
+}
+
+function getExchangeFromSymbol(symbol = '') {
+  const s = symbol.toUpperCase();
+  if (s.endsWith('.NS')) return 'NSE';
+  if (s.endsWith('.L')) return 'LSE';
+  if (s.endsWith('.SI')) return 'SGX';
+  if (s.endsWith('.HK')) return 'HKEX';
+  if (s.endsWith('.T')) return 'TSE';
+  return 'NASDAQ';
+}
+
+function setUserAvatar() {
+  const userAvatar = document.getElementById('user-avatar');
+  if (!userAvatar) return;
+  const email = authState?.user?.email || '';
+  userAvatar.textContent = email ? email[0].toUpperCase() : 'U';
+}
+
+function renderPortfolio(portfolioPayload) {
+  const summary = portfolioPayload?.summary;
+  const holdings = portfolioPayload?.holdings || [];
+  const displayCurrency = summary?.displayCurrency || 'INR';
+
+  const totalEl = document.getElementById('port-total');
+  if (totalEl) totalEl.textContent = summary ? formatMoney(summary.totalCurrentValue, displayCurrency) : '—';
+
+  const pnlEl = document.getElementById('port-pnl-badge');
+  if (pnlEl && summary) {
+    const pnl = Number(summary.totalPnl || 0);
+    const pct = Number(summary.totalPnlPct || 0);
+    const up = pnl >= 0;
+    pnlEl.classList.remove('up', 'down');
+    pnlEl.classList.add(up ? 'up' : 'down');
+    pnlEl.textContent = `${up ? '▲' : '▼'} ${formatMoney(Math.abs(pnl), displayCurrency)} (${Math.abs(pct).toFixed(2)}%)`;
+  }
+
+  const holdingsCountEl = document.getElementById('holdings-count');
+  if (holdingsCountEl) holdingsCountEl.textContent = String(holdings.length);
+
+  const list = document.getElementById('holdings-list');
+  if (!list) return;
+  if (!holdings.length) {
+    list.innerHTML = '<div class="section-empty">No holdings yet</div>';
+    return;
+  }
+
+  list.innerHTML = holdings.map((h) => {
+    const up = Number(h.pnlPct || 0) >= 0;
+    return `
+      <div class="holding-row" onclick="showStockDetail('${escapeHtml(h.symbol)}','${escapeHtml(h.exchange)}','${escapeHtml(h.stockId)}')">
+        <div class="holding-sym-wrap">
+          <div class="holding-sym">${escapeHtml(h.symbol.split('.')[0])}</div>
+          <div class="holding-name">${escapeHtml(h.companyName || h.symbol)}</div>
+        </div>
+        <div class="holding-right">
+          <div class="holding-val">${formatMoney(h.currentValue, h.listingCurrency)}</div>
+          <div class="holding-chg ${up ? 'up' : 'down'}">${up ? '▲' : '▼'} ${Math.abs(Number(h.pnlPct || 0)).toFixed(2)}%</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderWatchlist(rows) {
+  const list = document.getElementById('watchlist-list');
+  if (!list) return;
+  if (!rows.length) {
+    list.innerHTML = '<div class="section-empty">Watchlist is empty</div>';
+    return;
+  }
+
+  list.innerHTML = rows.map((w) => {
+    const symbol = w.symbol || '';
+    const exchange = w.exchange || getExchangeFromSymbol(symbol);
+    return `
+      <div class="watch-row" onclick="showStockDetail('${escapeHtml(symbol)}','${escapeHtml(exchange)}','${escapeHtml(w.stock_id)}')">
+        <span class="watch-sym">${escapeHtml(symbol.split('.')[0])}</span>
+        <span class="watch-price">${formatMoney(w.current_price, w.listing_currency)}</span>
+        <button class="btn btn-ghost btn-sm" style="padding:2px 8px;border-radius:4px" onclick="removeFromWatchlist('${escapeHtml(w.stock_id)}','${escapeHtml(symbol)}',event)">×</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderOrders(rows) {
+  const list = document.getElementById('orders-list');
+  if (!list) return;
+  if (!rows.length) {
+    list.innerHTML = '<div class="section-empty">No orders yet</div>';
+    return;
+  }
+
+  list.innerHTML = rows.slice(0, 8).map((o) => `
+    <div class="order-row">
+      <div class="order-top">
+        <span class="order-sym">${escapeHtml((o.symbol || '').split('.')[0])}</span>
+        <span class="order-type ${(o.side || '').toLowerCase() === 'sell' ? 'sell' : 'buy'}">${escapeHtml((o.side || '').toUpperCase())}</span>
+      </div>
+      <div class="order-bot">
+        <span class="order-qty">${Number(o.quantity || 0)} shares · ${(o.order_type || 'market').toUpperCase()}</span>
+        <span class="order-val">${formatMoney(o.executed_total || Number(o.quantity || 0) * Number(o.executed_price || o.limit_price || 0), o.listing_currency)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function fetchWalletBalance() {
+  const res = await fetch(`${API}/api/wallet/balance`, { headers: getAuthHeaders() });
+  const json = await res.json();
+  const payload = getResponseData(json);
+  if (!res.ok || !payload) throw new Error(getResponseError(json, 'Failed to fetch wallet'));
+  setWalletInUi(payload.balance, payload.homeCurrency || authState.user?.homeCurrency || 'INR');
+  return payload;
+}
+
+async function fetchPortfolio() {
+  const res = await fetch(`${API}/api/portfolio`, { headers: getAuthHeaders() });
+  const json = await res.json();
+  const payload = getResponseData(json);
+  if (!res.ok || !payload) throw new Error(getResponseError(json, 'Failed to fetch portfolio'));
+  renderPortfolio(payload);
+  return payload;
+}
+
+async function fetchWatchlist() {
+  const res = await fetch(`${API}/api/watchlist`, { headers: getAuthHeaders() });
+  const json = await res.json();
+  const payload = getResponseData(json);
+  if (!res.ok || !Array.isArray(payload)) throw new Error(getResponseError(json, 'Failed to fetch watchlist'));
+  renderWatchlist(payload);
+  return payload;
+}
+
+async function fetchOrderHistory() {
+  const res = await fetch(`${API}/api/orders/history`, { headers: getAuthHeaders() });
+  const json = await res.json();
+  const payload = getResponseData(json);
+  const rows = payload?.orders;
+  if (!res.ok || !Array.isArray(rows)) throw new Error(getResponseError(json, 'Failed to fetch orders'));
+  renderOrders(rows);
+  return rows;
+}
+
+async function loadDashboardData() {
+  if (!authState.loggedIn) return;
+  setUserAvatar();
+  try {
+    await Promise.all([fetchWalletBalance(), fetchPortfolio(), fetchWatchlist(), fetchOrderHistory()]);
+  } catch (err) {
+    showToast(err.message || 'Unable to load dashboard data', 'error');
+  }
+}
+
 // ─────────────────────────────────────────────────────────
 // PAGE NAVIGATION
 // ─────────────────────────────────────────────────────────
@@ -1472,8 +1667,15 @@ function showPage(page) {
     el.style.display = 'flex';
     el.style.flexDirection = 'column';
   }
-  if (page === 'dashboard') { initDashboardGlobe(); setTimeout(hideGlobeHint, 6000); }
-  if (page === 'stocks') renderStocksList();
+  if (page === 'dashboard') {
+    initDashboardGlobe();
+    setTimeout(hideGlobeHint, 6000);
+    loadDashboardData();
+  }
+  if (page === 'stocks') {
+    if (!allStocks.length) fetchRealStocks();
+    renderStocksList();
+  }
 }
 
 function showAuth(mode = 'login') {
@@ -1555,13 +1757,11 @@ if (res.ok && token) {
   authState = { loggedIn: true, token, user };
   localStorage.setItem('sx_token', token);
   localStorage.setItem('sx_user', JSON.stringify(user));
-      if (data.user?.email) {
-        document.getElementById('user-avatar').textContent = data.user.email[0].toUpperCase();
-      }
+      setUserAvatar();
       showToast('Welcome back! 👋', 'success');
       showPage('dashboard');
     } else {
-      showToast(data.message || 'Invalid credentials', 'error');
+      showToast(getResponseError(data, 'Invalid credentials'), 'error');
     }
   } catch {
     showToast('Unable to reach server. Please try again.', 'error');
@@ -1618,7 +1818,13 @@ function handleLogout() {
 const savedToken = localStorage.getItem('sx_token');
 const savedUser = localStorage.getItem('sx_user');
 if (savedToken && savedUser) {
-  authState = { loggedIn: true, token: savedToken, user: JSON.parse(savedUser) };
+  try {
+    authState = { loggedIn: true, token: savedToken, user: JSON.parse(savedUser) };
+    setUserAvatar();
+  } catch {
+    localStorage.removeItem('sx_token');
+    localStorage.removeItem('sx_user');
+  }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -1698,7 +1904,7 @@ function hideGlobeHint() {
 // ─────────────────────────────────────────────────────────
 // STOCKS LIST
 // ─────────────────────────────────────────────────────────
-let allStocks = [...DEMO_STOCKS];
+let allStocks = [];
 
 function renderStocksList() {
   const search = (document.getElementById('stocks-search')?.value || '').toLowerCase();
@@ -1715,10 +1921,15 @@ function renderStocksList() {
   document.getElementById('stocks-count').textContent = `${filtered.length} stocks`;
 
   const list = document.getElementById('stocks-list');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="section-empty">No stocks match your filters</div>';
+    return;
+  }
+
   list.innerHTML = filtered.map(s => {
     const bars = generateMiniSparkBars(s.up);
     return `
-    <div class="stock-row" onclick="showStockDetail('${s.sym}','${s.exchange}')">
+    <div class="stock-row" onclick="showStockDetail('${s.sym}','${s.exchange}','${s.stockId || ''}')">
       <div class="stock-sym-col">
         <div>
           <span class="stock-sym-main">${s.sym.split('.')[0]}</span>
@@ -1733,25 +1944,26 @@ function renderStocksList() {
       <div class="spark-bars">${bars}</div>
     </div>`;
   }).join('');
-
-  // Try fetching real data in background
-  fetchRealStocks();
 }
 
 async function fetchRealStocks() {
+  if (isFetchingStocks) return;
+  isFetchingStocks = true;
   try {
     const token = authState.token || localStorage.getItem('sx_token');
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    const res = await fetch(`${API}/api/stocks?limit=50`, { headers });
+    const res = await fetch(`${API}/api/stocks?limit=500&page=1`, { headers });
     if (res.ok) {
-      const data = await res.json();
-      if (data.stocks && data.stocks.length > 0) {
-        const mapped = data.stocks.map(s => ({
+      const json = await res.json();
+      const rows = getResponseData(json)?.stocks || [];
+      if (rows.length > 0) {
+        const mapped = rows.map(s => ({
+          stockId: s.id,
           sym: s.symbol,
-          name: s.company_name || s.name || s.symbol,
-          price: formatPrice(s.current_price, s.currency),
-          chg: formatChg(s.change_pct || s.day_change_pct),
-          up: (s.change_pct || s.day_change_pct) >= 0,
+          name: s.company_name || s.symbol,
+          price: formatPrice(s.current_price, s.listing_currency),
+          chg: '—',
+          up: true,
           exchange: s.exchange || 'NSE',
           sector: s.sector || 'Mixed',
         }));
@@ -1759,7 +1971,14 @@ async function fetchRealStocks() {
         renderStocksList();
       }
     }
-  } catch { /* use demo data */ }
+  } catch {
+    if (!allStocks.length) {
+      allStocks = [...DEMO_STOCKS];
+      renderStocksList();
+    }
+  } finally {
+    isFetchingStocks = false;
+  }
 }
 
 function formatPrice(p, currency) {
@@ -1789,9 +2008,11 @@ function filterStocks() { renderStocksList(); }
 // ─────────────────────────────────────────────────────────
 // STOCK DETAIL
 // ─────────────────────────────────────────────────────────
-async function showStockDetail(symbol, exchange) {
+async function showStockDetail(symbol, exchange, stockId = null) {
   previousPage = document.querySelector('[id^="page-"]:not([style*="none"]),[id^="page-"]:not([style])').id.replace('page-', '') || 'dashboard';
   currentDetailSymbol = symbol;
+  currentDetailStockId = stockId;
+  currentChartHistory = [];
 
   document.getElementById('detail-symbol').textContent = symbol.split('.')[0];
   document.getElementById('detail-exchange').textContent = `${exchange} · ${getExchangeCountry(exchange)} · Equity`;
@@ -1801,6 +2022,7 @@ async function showStockDetail(symbol, exchange) {
   if (stockData) {
     const price = parsePriceNum(stockData.price);
     currentDetailPrice = price;
+    currentDetailCurrency = exchange === 'NSE' ? 'INR' : exchange === 'LSE' ? 'GBP' : exchange === 'SGX' ? 'SGD' : exchange === 'HKEX' ? 'HKD' : exchange === 'TSE' ? 'JPY' : 'USD';
     document.getElementById('detail-price').textContent = stockData.price;
     document.getElementById('sum-price').textContent = stockData.price;
     document.getElementById('sum-total').textContent = stockData.price;
@@ -1825,15 +2047,52 @@ async function showStockDetail(symbol, exchange) {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
     if (res.ok) {
-      const d = await res.json();
-      if (d.current_price) {
-        const p = d.current_price;
+      const json = await res.json();
+      const payload = getResponseData(json);
+      const stock = payload?.stock;
+      const history = payload?.priceHistory || [];
+
+      if (stock?.id) currentDetailStockId = stock.id;
+      if (stock?.listing_currency) currentDetailCurrency = stock.listing_currency;
+
+      if (stock?.current_price != null) {
+        const p = Number(stock.current_price);
         currentDetailPrice = p;
-        const currency = d.currency === 'INR' ? '₹' : d.currency === 'GBP' ? '£' : d.currency === 'SGD' ? 'S$' : '$';
-        document.getElementById('detail-price').textContent = currency + Number(p).toFixed(2);
-        document.getElementById('sum-price').textContent = currency + Number(p).toFixed(2);
-        updateTradeSummary();
+        document.getElementById('detail-price').textContent = formatMoney(p, currentDetailCurrency);
+        document.getElementById('sum-price').textContent = formatMoney(p, currentDetailCurrency);
       }
+
+      if (history.length) {
+        currentChartHistory = history.map((h) => ({
+          date: h.date,
+          open: Number(h.open),
+          high: Number(h.high),
+          low: Number(h.low),
+          close: Number(h.close),
+          volume: Number(h.volume || 0),
+        })).filter((h) => Number.isFinite(h.close));
+
+        const latest = currentChartHistory[currentChartHistory.length - 1];
+        const highs = currentChartHistory.map((h) => h.high).filter(Number.isFinite);
+        const lows = currentChartHistory.map((h) => h.low).filter(Number.isFinite);
+
+        if (latest) {
+          document.getElementById('m-high').textContent = formatMoney(latest.high, currentDetailCurrency);
+          document.getElementById('m-low').textContent = formatMoney(latest.low, currentDetailCurrency);
+          document.getElementById('m-vol').textContent = `${(latest.volume / 1000000).toFixed(2)}M`;
+        }
+        if (highs.length && lows.length) {
+          document.getElementById('m-range').textContent = `${formatMoney(Math.min(...lows), currentDetailCurrency)} - ${formatMoney(Math.max(...highs), currentDetailCurrency)}`;
+        }
+      }
+
+      if (!currentDetailStockId) {
+        const resolved = await resolveStockIdBySymbol(symbol);
+        if (resolved) currentDetailStockId = resolved;
+      }
+
+      drawPriceChart();
+      updateTradeSummary();
     }
   } catch {}
 }
@@ -1889,22 +2148,38 @@ async function placeOrder() {
   const btn = document.getElementById('trade-submit-btn');
 
   if (!authState.loggedIn) { showToast('Please log in to trade', 'error'); showAuth(); return; }
+  if (!currentDetailStockId) {
+    currentDetailStockId = await resolveStockIdBySymbol(currentDetailSymbol);
+  }
+  if (!currentDetailStockId) {
+    showToast('Unable to resolve stock for order', 'error');
+    return;
+  }
 
   btn.textContent = 'Placing order...'; btn.disabled = true;
   try {
+    const payload = {
+      stockId: currentDetailStockId,
+      orderType: type,
+      side: currentTradeTab,
+      quantity: qty,
+    };
+    if (type === 'limit') payload.limitPrice = currentDetailPrice;
+
     const res = await fetch(`${API}/api/orders`, {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${authState.token}` },
-      body: JSON.stringify({ symbol: currentDetailSymbol, quantity: qty, order_type: type, side: currentTradeTab })
+      body: JSON.stringify(payload)
     });
     if (res.ok) {
       showToast(`✓ ${currentTradeTab === 'buy' ? 'Bought' : 'Sold'} ${qty} × ${sym} successfully!`, 'success');
+      await loadDashboardData();
     } else {
       const d = await res.json();
-      showToast(d.message || 'Order failed — check balance', 'error');
+      showToast(getResponseError(d, 'Order failed — check balance'), 'error');
     }
   } catch {
-    showToast(`✓ Order simulated: ${currentTradeTab.toUpperCase()} ${qty} × ${sym}`, 'success');
+    showToast('Unable to place order right now', 'error');
   }
   btn.textContent = `${currentTradeTab === 'buy' ? 'Buy' : 'Sell'} ${sym}`;
   btn.disabled = false;
@@ -1912,7 +2187,81 @@ async function placeOrder() {
 
 async function addToWatchlist() {
   if (!authState.loggedIn) { showAuth(); return; }
-  showToast(`☆ ${currentDetailSymbol.split('.')[0]} added to watchlist`, 'success');
+  if (!currentDetailStockId) {
+    currentDetailStockId = await resolveStockIdBySymbol(currentDetailSymbol);
+  }
+  if (!currentDetailStockId) {
+    showToast('Unable to resolve stock for watchlist', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/watchlist`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ stockId: currentDetailStockId }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      showToast(getResponseError(json, 'Unable to add watchlist item'), 'error');
+      return;
+    }
+    showToast(`☆ ${currentDetailSymbol.split('.')[0]} added to watchlist`, 'success');
+    await fetchWatchlist();
+  } catch {
+    showToast('Unable to add to watchlist right now', 'error');
+  }
+}
+
+async function removeFromWatchlist(stockId, symbol, ev) {
+  if (ev) {
+    ev.stopPropagation();
+    ev.preventDefault();
+  }
+  if (!authState.loggedIn) { showAuth(); return; }
+  try {
+    const res = await fetch(`${API}/api/watchlist/${encodeURIComponent(stockId)}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      showToast(getResponseError(json, 'Unable to remove watchlist item'), 'error');
+      return;
+    }
+    showToast(`Removed ${symbol.split('.')[0]} from watchlist`, 'info');
+    await fetchWatchlist();
+  } catch {
+    showToast('Unable to remove watchlist item right now', 'error');
+  }
+}
+
+async function resolveStockIdBySymbol(symbol) {
+  if (!symbol) return null;
+  try {
+    const searchRes = await fetch(`${API}/api/stocks?search=${encodeURIComponent(symbol)}&limit=100&page=1`);
+    if (searchRes.ok) {
+      const searchJson = await searchRes.json();
+      const rows = getResponseData(searchJson)?.stocks || [];
+      const found = rows.find((r) => String(r.symbol || '').toUpperCase() === String(symbol).toUpperCase());
+      if (found?.id) return found.id;
+    }
+
+    const token = authState.token || localStorage.getItem('sx_token');
+    if (token) {
+      const lookupRes = await fetch(`${API}/api/stocks/lookup?q=${encodeURIComponent(symbol)}`, {
+        headers: getAuthHeaders(),
+      });
+      if (lookupRes.ok) {
+        const lookupJson = await lookupRes.json();
+        const row = getResponseData(lookupJson);
+        if (row?.id) return row.id;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 // ─────────────────────────────────────────────────────────
@@ -1935,15 +2284,23 @@ function drawPriceChart() {
   canvas.width = W; canvas.height = H;
   ctx.clearRect(0, 0, W, H);
 
-  // Generate synthetic OHLCV data
-  const points = chartPeriod === '1W' ? 7 : chartPeriod === '1M' ? 30 : chartPeriod === '3M' ? 90 : 180;
-  const prices = [];
-  let p = currentDetailPrice * (0.9 + Math.random() * 0.1);
-  for (let i = 0; i < points; i++) {
-    p += (Math.random() - 0.45) * p * 0.02;
-    prices.push(p);
+  let prices = [];
+  if (currentChartHistory.length > 1) {
+    const points = chartPeriod === '1W' ? 7 : chartPeriod === '1M' ? 30 : chartPeriod === '3M' ? 90 : currentChartHistory.length;
+    prices = currentChartHistory.slice(-points).map((p) => Number(p.close)).filter(Number.isFinite);
   }
-  prices[prices.length - 1] = currentDetailPrice;
+
+  // Fallback synthetic series only when price history is unavailable.
+  if (prices.length < 2) {
+    const points = chartPeriod === '1W' ? 7 : chartPeriod === '1M' ? 30 : chartPeriod === '3M' ? 90 : 180;
+    let p = currentDetailPrice * (0.9 + Math.random() * 0.1);
+    prices = [];
+    for (let i = 0; i < points; i++) {
+      p += (Math.random() - 0.45) * p * 0.02;
+      prices.push(p);
+    }
+    prices[prices.length - 1] = currentDetailPrice;
+  }
 
   const min = Math.min(...prices);
   const max = Math.max(...prices);
