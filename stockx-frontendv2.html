@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StockX — Global Markets Platform</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2300ff88'/><polyline points='4,24 10,16 16,20 22,10 28,14' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -99,7 +100,7 @@ html, body {
   content: ''; width: 24px; height: 1px; background: var(--accent);
 }
 .land-title {
-  font-size: clamp(36px, 4.5vw, 60px); font-weight: 800;
+  font-size: clamp(34px, 4.5vw, 58px); font-weight: 800;
   line-height: 1.08; letter-spacing: -0.03em;
   margin-bottom: 28px; color: var(--white);
 }
@@ -657,6 +658,87 @@ html, body {
   .features-grid { grid-template-columns: 1fr; }
   .detail-metrics { grid-template-columns: repeat(2,1fr); }
 }
+/* ════════════════════════════════════════
+   LANDING — TYPING ANIMATION
+════════════════════════════════════════ */
+.land-typed-title {
+  min-height: 2.3em;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+.land-typed-cursor {
+  display: inline-block;
+  color: var(--accent);
+  animation: land-blink 0.6s ease-in-out infinite;
+  font-weight: 300;
+  margin-left: 2px;
+}
+@keyframes land-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ════════════════════════════════════════
+   LANDING — ABSTRACT VISUAL (no stock data pre-auth)
+════════════════════════════════════════ */
+.land-abstract-visual {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.land-abstract-svg {
+  position: absolute; width: 420px; height: 420px;
+  opacity: 0.5; animation: svg-spin 30s linear infinite;
+}
+@keyframes svg-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.orb1 { animation: orb-spin1 8s linear infinite; transform-origin: 200px 200px; }
+.orb2 { animation: orb-spin2 12s linear infinite; transform-origin: 200px 200px; }
+.orb3 { animation: orb-spin3 18s linear infinite; transform-origin: 200px 200px; }
+@keyframes orb-spin1 { from{transform:rotate(0deg)translateX(120px)rotate(0deg)} to{transform:rotate(360deg)translateX(120px)rotate(-360deg)} }
+@keyframes orb-spin2 { from{transform:rotate(0deg)translateX(80px)rotate(0deg)} to{transform:rotate(-360deg)translateX(80px)rotate(360deg)} }
+@keyframes orb-spin3 { from{transform:rotate(120deg)translateX(40px)rotate(-120deg)} to{transform:rotate(480deg)translateX(40px)rotate(-480deg)} }
+.land-abstract-center {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.land-abstract-logo {
+  width: 60px; height: 60px; background: var(--accent);
+  border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 800; color: white;
+  box-shadow: 0 0 40px rgba(80,118,238,0.45);
+  animation: logo-pulse-land 3s ease-in-out infinite;
+}
+@keyframes logo-pulse-land { 0%,100%{box-shadow:0 0 24px rgba(80,118,238,0.4)} 50%{box-shadow:0 0 60px rgba(80,118,238,0.7)} }
+.land-abstract-tagline {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em;
+  color: var(--accent); text-transform: uppercase;
+}
+/* Exchange name ring — positioned around the logo */
+.land-exchange-ring {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.land-exch-dot {
+  position: absolute; top: 50%; left: 50%;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em;
+  font-weight: 600; color: var(--col, #5076ee);
+  padding: 3px 8px; border-radius: 3px;
+  border: 1px solid currentColor;
+  background: rgba(11,14,20,0.8);
+  transform: translate(-50%, -50%) rotate(var(--ang)) translateY(-145px) rotate(calc(-1 * var(--ang)));
+  animation: exch-dot-pulse 4s ease-in-out infinite;
+}
+.land-exch-dot:nth-child(2) { animation-delay: 0.6s; }
+.land-exch-dot:nth-child(3) { animation-delay: 1.2s; }
+.land-exch-dot:nth-child(4) { animation-delay: 1.8s; }
+.land-exch-dot:nth-child(5) { animation-delay: 2.4s; }
+.land-exch-dot:nth-child(6) { animation-delay: 3.0s; }
+.land-exch-dot:nth-child(7) { animation-delay: 3.6s; }
+@keyframes exch-dot-pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+@keyframes hero-glow { 0%,100%{opacity:0.6} 50%{opacity:1} }
+
+/* radial glow behind visual */
+.land-hero-right::before {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(80,118,238,0.07) 0%, transparent 70%);
+}
 </style>
 </head>
 <body>
@@ -677,32 +759,6 @@ html, body {
 
 <!-- ══════════════════ LANDING PAGE ══════════════════ -->
 <div id="page-landing">
-  <!-- TICKER -->
-  <div class="land-ticker" style="order:-1">
-    <div class="ticker-track" id="land-ticker">
-      <div class="ticker-item"><span class="ticker-symbol">RELIANCE</span><span class="ticker-price">₹2,450.30</span><span class="ticker-change up">+1.2%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">AAPL</span><span class="ticker-price">$187.45</span><span class="ticker-change up">+0.8%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">TSLA</span><span class="ticker-price">$248.10</span><span class="ticker-change down">-2.1%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">DBS</span><span class="ticker-price">S$33.21</span><span class="ticker-change up">+0.5%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">HSBA</span><span class="ticker-price">£6.78</span><span class="ticker-change down">-0.3%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">MSFT</span><span class="ticker-price">$412.80</span><span class="ticker-change up">+1.5%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">TCS</span><span class="ticker-price">₹3,880.00</span><span class="ticker-change up">+0.9%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">NVDA</span><span class="ticker-price">$875.60</span><span class="ticker-change up">+3.2%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">GOOGL</span><span class="ticker-price">$163.50</span><span class="ticker-change down">-0.6%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">META</span><span class="ticker-price">$495.20</span><span class="ticker-change up">+2.4%</span></div>
-      <!-- duplicate for seamless loop -->
-      <div class="ticker-item"><span class="ticker-symbol">RELIANCE</span><span class="ticker-price">₹2,450.30</span><span class="ticker-change up">+1.2%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">AAPL</span><span class="ticker-price">$187.45</span><span class="ticker-change up">+0.8%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">TSLA</span><span class="ticker-price">$248.10</span><span class="ticker-change down">-2.1%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">DBS</span><span class="ticker-price">S$33.21</span><span class="ticker-change up">+0.5%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">HSBA</span><span class="ticker-price">£6.78</span><span class="ticker-change down">-0.3%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">MSFT</span><span class="ticker-price">$412.80</span><span class="ticker-change up">+1.5%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">TCS</span><span class="ticker-price">₹3,880.00</span><span class="ticker-change up">+0.9%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">NVDA</span><span class="ticker-price">$875.60</span><span class="ticker-change up">+3.2%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">GOOGL</span><span class="ticker-price">$163.50</span><span class="ticker-change down">-0.6%</span></div>
-      <div class="ticker-item"><span class="ticker-symbol">META</span><span class="ticker-price">$495.20</span><span class="ticker-change up">+2.4%</span></div>
-    </div>
-  </div>
 
   <!-- NAV -->
   <nav class="land-nav">
@@ -725,18 +781,15 @@ html, body {
   <section class="land-hero">
     <div class="land-hero-left">
       <div class="land-eyebrow">Global Markets · 14,732 Stocks · 7 Exchanges</div>
-      <h1 class="land-title">
-        Trade the<br>
-        world from<br>
-        <span class="hi">one platform.</span>
+      <h1 class="land-title land-typed-title">
+        <span id="land-typed-text"></span><span class="land-typed-cursor">|</span>
       </h1>
-      <p class="land-desc">
-        NSE, NYSE, NASDAQ, LSE, SGX and more — all in one place.
-        Spin the globe, find a stock, trade in seconds.
+      <p class="land-desc" id="land-typed-sub" style="min-height:3em;">
+        Real-time market intelligence across 7 global exchanges.
       </p>
       <div class="land-cta">
         <button class="btn btn-primary" onclick="showAuth('register')">
-          Start Trading Free →
+          Get Started Free →
         </button>
         <button class="btn btn-secondary" onclick="showPage('stocks')">
           Browse Markets
@@ -759,8 +812,32 @@ html, body {
       </div>
     </div>
 
-    <div class="land-hero-right">
-      <div id="globe-landing" style="width:100%;height:100%"></div>
+    <div class="land-hero-right" style="position:relative;overflow:hidden;border-left:1px solid var(--border);">
+      <!-- Abstract animated visual — no stock data shown pre-auth -->
+      <div class="land-abstract-visual">
+        <svg class="land-abstract-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="200" cy="200" r="120" fill="none" stroke="rgba(80,118,238,0.15)" stroke-width="1" />
+          <circle cx="200" cy="200" r="80"  fill="none" stroke="rgba(80,118,238,0.10)" stroke-width="1" />
+          <circle cx="200" cy="200" r="40"  fill="none" stroke="rgba(80,118,238,0.08)" stroke-width="1" />
+          <!-- orbit dots -->
+          <circle class="orb1" cx="320" cy="200" r="5" fill="#5076ee" opacity="0.7"/>
+          <circle class="orb2" cx="200" cy="80"  r="4" fill="#00e5a0" opacity="0.6"/>
+          <circle class="orb3" cx="120" cy="290" r="3" fill="#5076ee" opacity="0.5"/>
+        </svg>
+        <div class="land-abstract-center">
+          <div class="land-abstract-logo">S</div>
+          <div class="land-abstract-tagline">7 EXCHANGES</div>
+        </div>
+        <div class="land-exchange-ring">
+          <span class="land-exch-dot" style="--ang:0deg;   --col:#f5a623">NSE</span>
+          <span class="land-exch-dot" style="--ang:51deg;  --col:#5076ee">NYSE</span>
+          <span class="land-exch-dot" style="--ang:103deg; --col:#00e5a0">NASDAQ</span>
+          <span class="land-exch-dot" style="--ang:154deg; --col:#ff4d6d">LSE</span>
+          <span class="land-exch-dot" style="--ang:205deg; --col:#9b59ff">SGX</span>
+          <span class="land-exch-dot" style="--ang:257deg; --col:#ff6b35">HKEX</span>
+          <span class="land-exch-dot" style="--ang:308deg; --col:#00b4ff">TSE</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1292,7 +1369,6 @@ let authState = { loggedIn: false, token: null, user: null };
 let currentDetailSymbol = '';
 let previousPage = 'dashboard';
 let globeInst = null;
-let globeLanding = null;
 let currentTradeTab = 'buy';
 let currentDetailPrice = 2450.30;
 
@@ -1373,6 +1449,20 @@ const DEMO_STOCKS = [
 // PAGE NAVIGATION
 // ─────────────────────────────────────────────────────────
 function showPage(page) {
+  // Guard protected pages — redirect to auth if not logged in
+  const PROTECTED = ['dashboard', 'stocks', 'stock-detail'];
+  if (PROTECTED.includes(page) && !authState.loggedIn) {
+    const savedToken = localStorage.getItem('sx_token');
+    const savedUser  = localStorage.getItem('sx_user');
+    if (savedToken && savedUser) {
+      // Restore session inline so navigation proceeds
+      try { authState = { loggedIn: true, token: savedToken, user: JSON.parse(savedUser) }; } catch {}
+    } else {
+      showAuth();
+      return;
+    }
+  }
+
   document.querySelectorAll('[id^="page-"]').forEach(el => {
     el.style.display = 'none';
     el.style.flexDirection = '';
@@ -1382,7 +1472,6 @@ function showPage(page) {
     el.style.display = 'flex';
     el.style.flexDirection = 'column';
   }
-  if (page === 'landing') initLandingGlobe();
   if (page === 'dashboard') { initDashboardGlobe(); setTimeout(hideGlobeHint, 6000); }
   if (page === 'stocks') renderStocksList();
 }
@@ -1434,6 +1523,12 @@ function showFieldErr(id, show) {
   const el = document.getElementById(id);
   if (el) el.classList.toggle('show', show);
 }
+// NOTE: SHA-256 is used here only for local demo-mode credential storage.
+// It is NOT suitable for production password hashing. Never use this pattern in a real backend.
+async function hashPass(pass) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pass));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
 
 async function handleLogin() {
   const email = document.getElementById('login-email').value.trim();
@@ -1452,10 +1547,14 @@ async function handleLogin() {
       body: JSON.stringify({ email, password: pass })
     });
     const data = await res.json();
-    if (res.ok && data.accessToken) {
-      authState = { loggedIn: true, token: data.accessToken, user: data.user };
-      localStorage.setItem('sx_token', data.accessToken);
-      localStorage.setItem('sx_user', JSON.stringify(data.user));
+// Backend wraps in { success, data: { accessToken, user } }
+    const payload = data.data || data;
+    const token = payload.accessToken || payload.token || data.accessToken || data.token;
+    const user  = payload.user || data.user;
+if (res.ok && token) {
+  authState = { loggedIn: true, token, user };
+  localStorage.setItem('sx_token', token);
+  localStorage.setItem('sx_user', JSON.stringify(user));
       if (data.user?.email) {
         document.getElementById('user-avatar').textContent = data.user.email[0].toUpperCase();
       }
@@ -1465,11 +1564,7 @@ async function handleLogin() {
       showToast(data.message || 'Invalid credentials', 'error');
     }
   } catch {
-    // Demo mode fallback
-    authState = { loggedIn: true, token: 'demo', user: { email, name: 'Demo User' } };
-    document.getElementById('user-avatar').textContent = email[0].toUpperCase();
-    showToast('Logged in (demo mode)', 'success');
-    showPage('dashboard');
+    showToast('Unable to reach server. Please try again.', 'error');
   }
   btn.textContent = 'Sign In'; btn.disabled = false;
 }
@@ -1496,16 +1591,17 @@ async function handleRegister() {
     });
     const data = await res.json();
     if (res.ok) {
+      const demoUsers = JSON.parse(localStorage.getItem('sx_demo_users') || '{}');
+      const ph = await hashPass(pass);
+      demoUsers[email.toLowerCase()] = { name, ph };
+      localStorage.setItem('sx_demo_users', JSON.stringify(demoUsers));
       showToast('Account created! Please sign in.', 'success');
       switchAuthTab('login');
     } else {
       showToast(data.message || 'Registration failed', 'error');
     }
   } catch {
-    authState = { loggedIn: true, token: 'demo', user: { email, name } };
-    document.getElementById('user-avatar').textContent = name[0].toUpperCase();
-    showToast('Account created (demo mode)! 🎉', 'success');
-    showPage('dashboard');
+    showToast('Unable to reach server. Please try again.', 'error');
   }
   btn.textContent = 'Create Account'; btn.disabled = false;
 }
@@ -1528,32 +1624,8 @@ if (savedToken && savedUser) {
 // ─────────────────────────────────────────────────────────
 // GLOBE — LANDING
 // ─────────────────────────────────────────────────────────
-let landingGlobeInit = false;
-function initLandingGlobe() {
-  if (landingGlobeInit) return;
-  landingGlobeInit = true;
-  const container = document.getElementById('globe-landing');
-  if (!container || typeof Globe === 'undefined') return;
-  const points = Object.entries(EXCHANGES).map(([k, v]) => ({
-    lat: v.lat, lng: v.lng, label: v.label, color: v.color, size: 0.7,
-    exchange: k,
-  }));
-
-  globeLanding = Globe()(container)
-    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
-    .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-    .pointsData(points)
-    .pointColor('color')
-    .pointRadius('size')
-    .pointAltitude(0.01)
-    .pointLabel(d => `<div style="font-family:JetBrains Mono,monospace;font-size:12px;background:rgba(11,14,20,0.95);border:1px solid rgba(80,118,238,0.5);padding:8px 12px;border-radius:6px;color:#c9d1e0"><b style="color:${d.color}">${d.label}</b><br>${EXCHANGES[d.exchange].meta}</div>`)
-    .onPointClick(d => { showAuth('register'); });
-
-  globeLanding.controls().autoRotate = true;
-  globeLanding.controls().autoRotateSpeed = 0.5;
-  globeLanding.controls().enableZoom = false;
-  setTimeout(() => { globeLanding.pointOfView({ altitude: 2.5 }); }, 400);
-}
+// Landing page has no globe — the globe is only shown in the post-auth dashboard.
+function initLandingGlobe() { /* no-op — globe is post-auth only */ }
 
 // ─────────────────────────────────────────────────────────
 // GLOBE — DASHBOARD
@@ -1953,6 +2025,64 @@ window.addEventListener('resize', () => {
   const dp = document.getElementById('page-stock-detail');
   if (dp && dp.style.display !== 'none') drawPriceChart();
 });
+
+// ─────────────────────────────────────────────────────────
+// LANDING PAGE — TYPING ANIMATION
+// ─────────────────────────────────────────────────────────
+const LANDING_PHRASES = [
+  "Get started with real-time stock values.",
+  "Track live analytics across the globe.",
+  "Trade across 7 major stock exchanges.",
+  "Your portfolio, always one step ahead.",
+  "One platform. Every market. All yours.",
+  "Spin the globe. Find your next investment."
+];
+
+const LANDING_SUBS = [
+  "Real-time prices from NSE, NYSE, NASDAQ, LSE, SGX, HKEX and TSE.",
+  "Live P&L tracking with multi-currency support.",
+  "Register free and explore stocks from anywhere in the world.",
+  "30-day OHLCV charts with TradingView-style candlestick data.",
+  "Secure wallet with deposit, withdraw and full audit trail.",
+  "Click any exchange on the globe to browse its top movers instantly."
+];
+
+let ltIdx = 0, ltCharIdx = 0, ltDeleting = false;
+const ltEl = document.getElementById('land-typed-text');
+const ltSubEl = document.getElementById('land-typed-sub');
+
+function landingTypeLoop() {
+  if (!ltEl) return;
+  const phrase = LANDING_PHRASES[ltIdx];
+
+  if (!ltDeleting) {
+    ltEl.textContent = phrase.slice(0, ++ltCharIdx);
+    if (ltCharIdx === phrase.length) {
+      ltDeleting = true;
+      setTimeout(landingTypeLoop, 2200);
+      return;
+    }
+  } else {
+    ltEl.textContent = phrase.slice(0, --ltCharIdx);
+    if (ltCharIdx === 0) {
+      ltDeleting = false;
+      ltIdx = (ltIdx + 1) % LANDING_PHRASES.length;
+      if (ltSubEl) {
+        ltSubEl.style.opacity = '0';
+        setTimeout(() => {
+          ltSubEl.textContent = LANDING_SUBS[ltIdx];
+          ltSubEl.style.opacity = '1';
+          ltSubEl.style.transition = 'opacity 0.4s ease';
+        }, 200);
+      }
+    }
+  }
+  setTimeout(landingTypeLoop, ltDeleting ? 45 : 75);
+}
+
+// Start typing after landing page appears (2s intro splash + small buffer)
+setTimeout(landingTypeLoop, 2200);
+
 </script>
 </body>
 </html>
