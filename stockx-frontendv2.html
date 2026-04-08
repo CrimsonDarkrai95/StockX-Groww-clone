@@ -49,8 +49,8 @@ html, body {
 #page-auth     { position: fixed; inset: 0; z-index: 1900; display: none; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); }
 #page-dashboard{ position: fixed; inset: 0; z-index: 1800; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-stocks   { position: fixed; inset: 0; z-index: 1850; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
-#page-orders   { position: fixed; inset: 0; z-index: 1860; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
-#page-wallet   { position: fixed; inset: 0; z-index: 1865; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
+#page-orders   { position: fixed; inset: 0; z-index: 1855; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
+#page-wallet   { position: fixed; inset: 0; z-index: 1857; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 #page-stock-detail { position: fixed; inset: 0; z-index: 1870; display: none; flex-direction: column; background: var(--bg); overflow: hidden; }
 
 /* ════════════════════════════════════════
@@ -653,6 +653,64 @@ html, body {
 /* Volume badge */
 .vol-val { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
 
+/* ════════════════════════════════════════
+   ORDERS PAGE
+════════════════════════════════════════ */
+.orders-page-body { flex: 1; overflow-y: auto; padding: 24px; }
+.orders-page-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.orders-page-header {
+  display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr 1fr 1fr 0.7fr;
+  padding: 10px 20px; border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em;
+  color: var(--muted); text-transform: uppercase; background: var(--surface);
+}
+.orders-page-row {
+  display: grid; grid-template-columns: 1.2fr 0.8fr 0.8fr 0.8fr 1fr 1fr 0.7fr;
+  padding: 14px 20px; border-bottom: 1px solid rgba(30,37,53,0.5);
+  align-items: center; transition: background 0.12s;
+}
+.orders-page-row:hover { background: var(--surface2); }
+.orders-page-row:last-child { border-bottom: none; }
+.order-page-sym { font-size: 14px; font-weight: 700; color: var(--white); }
+.order-page-sub { font-size: 11px; color: var(--muted); font-family: var(--font-mono); margin-top: 2px; }
+
+/* ════════════════════════════════════════
+   WALLET PAGE
+════════════════════════════════════════ */
+.wallet-page-body { flex: 1; overflow-y: auto; padding: 24px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px; align-content: start; }
+.wallet-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px; }
+.wallet-balance-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+.wallet-balance-amount { font-size: 36px; font-weight: 800; color: var(--white); letter-spacing: -0.02em; }
+.wallet-form-row { display: flex; gap: 10px; margin-top: 20px; }
+.wallet-amount-input {
+  flex: 1; padding: 11px 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 15px; font-weight: 600; color: var(--white);
+  font-family: var(--font-mono); outline: none; transition: border-color 0.15s;
+}
+.wallet-amount-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(80,118,238,0.12); }
+.wallet-amount-input::placeholder { color: var(--muted); font-weight: 400; }
+.wallet-txn-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.wallet-txn-header {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  padding: 10px 20px; border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em;
+  color: var(--muted); text-transform: uppercase;
+}
+.wallet-txn-row {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  padding: 13px 20px; border-bottom: 1px solid rgba(30,37,53,0.5);
+  align-items: center; transition: background 0.12s;
+}
+.wallet-txn-row:hover { background: var(--surface2); }
+.wallet-txn-row:last-child { border-bottom: none; }
+.txn-type-badge {
+  display: inline-flex; padding: 2px 8px; border-radius: 3px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+}
+.txn-type-badge.deposit  { background: rgba(0,229,160,0.1); color: var(--green); border: 1px solid rgba(0,229,160,0.2); }
+.txn-type-badge.withdraw { background: rgba(255,77,109,0.1); color: var(--red);   border: 1px solid rgba(255,77,109,0.2); }
+.txn-type-badge.trade    { background: rgba(80,118,238,0.1); color: var(--accent);border: 1px solid rgba(80,118,238,0.2); }
+
 /* Responsive hiding for narrow screens */
 @media (max-width: 900px) {
   .land-hero { grid-template-columns: 1fr; }
@@ -1151,19 +1209,14 @@ html, body {
       <div class="panel-section">
         <div class="panel-sec-hdr"><span>Top Gainers</span></div>
         <div id="gainers-list">
-          <div class="watch-row" onclick="showStockDetail('NVDA','NASDAQ')"><span class="watch-sym">NVDA</span><span class="watch-price">$875.60</span><span class="watch-chg up">+3.2%</span></div>
-          <div class="watch-row" onclick="showStockDetail('META','NASDAQ')"><span class="watch-sym">META</span><span class="watch-price">$495.20</span><span class="watch-chg up">+2.4%</span></div>
-          <div class="watch-row" onclick="showStockDetail('RELIANCE.NS','NSE')"><span class="watch-sym">RELIANCE</span><span class="watch-price">₹2,450</span><span class="watch-chg up">+1.2%</span></div>
-          <div class="watch-row" onclick="showStockDetail('MSFT','NASDAQ')"><span class="watch-sym">MSFT</span><span class="watch-price">$412.80</span><span class="watch-chg up">+1.5%</span></div>
+          <div class="section-empty" style="padding:16px">Loading...</div>
         </div>
       </div>
 
       <div class="panel-section">
         <div class="panel-sec-hdr"><span>Top Losers</span></div>
         <div id="losers-list">
-          <div class="watch-row" onclick="showStockDetail('TSLA','NASDAQ')"><span class="watch-sym">TSLA</span><span class="watch-price">$248.10</span><span class="watch-chg down">-2.1%</span></div>
-          <div class="watch-row" onclick="showStockDetail('GOOGL','NASDAQ')"><span class="watch-sym">GOOGL</span><span class="watch-price">$163.50</span><span class="watch-chg down">-0.6%</span></div>
-          <div class="watch-row" onclick="showStockDetail('HSBA.L','LSE')"><span class="watch-sym">HSBA</span><span class="watch-price">£6.78</span><span class="watch-chg down">-0.3%</span></div>
+          <div class="section-empty" style="padding:16px">Loading...</div>
         </div>
       </div>
     </div>
@@ -1240,15 +1293,34 @@ html, body {
       <div class="dash-nav-link" onclick="showPage('wallet')">Wallet</div>
     </div>
     <div class="dash-nav-right">
-      <div class="nav-wallet-chip">💰 <span class="green" id="nav-wallet-bal-orders">₹45,230</span></div>
+      <div class="nav-wallet-chip">💰 <span class="green" id="nav-wallet-bal-orders">—</span></div>
       <button class="btn btn-ghost btn-sm" onclick="handleLogout()">Logout</button>
     </div>
   </nav>
-  <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-    <div style="font-size:18px;font-weight:800;color:var(--white)">Order History</div>
-    <button class="btn btn-secondary btn-sm" onclick="loadOrdersPage()">Refresh</button>
+
+  <div class="orders-page-body">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--white)">Order History</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:4px" id="orders-page-count">Loading…</div>
+      </div>
+    </div>
+
+    <div class="orders-page-table-wrap">
+      <div class="orders-page-header">
+        <span>Symbol</span>
+        <span>Side</span>
+        <span>Type</span>
+        <span>Qty</span>
+        <span>Price</span>
+        <span>Date / Time</span>
+        <span>Status</span>
+      </div>
+      <div id="orders-page-list">
+        <div class="section-empty">Loading orders…</div>
+      </div>
+    </div>
   </div>
-  <div id="orders-page-list" style="flex:1;overflow:auto"></div>
 </div>
 
 <!-- ══════════════════ WALLET PAGE ══════════════════ -->
@@ -1262,27 +1334,55 @@ html, body {
       <div class="dash-nav-link active">Wallet</div>
     </div>
     <div class="dash-nav-right">
-      <div class="nav-wallet-chip">💰 <span class="green" id="nav-wallet-bal-wallet">₹45,230</span></div>
+      <div class="nav-wallet-chip">💰 <span class="green" id="nav-wallet-bal-wallet">—</span></div>
       <button class="btn btn-ghost btn-sm" onclick="handleLogout()">Logout</button>
     </div>
   </nav>
-  <div style="padding:20px 24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;border-bottom:1px solid var(--border)">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px">
-      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.1em">CURRENT BALANCE</div>
-      <div id="wallet-page-balance" style="font-size:30px;font-weight:800;color:var(--white);margin-top:8px">₹45,230</div>
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <input id="wallet-amount" class="trade-input" type="number" min="1" step="0.01" placeholder="Amount" style="margin:0;flex:1">
-        <button class="btn btn-green btn-sm" onclick="walletAction('deposit')">Deposit</button>
-        <button class="btn btn-danger btn-sm" onclick="walletAction('withdraw')">Withdraw</button>
+
+  <div class="wallet-page-body">
+    <!-- Left: balance + deposit/withdraw -->
+    <div>
+      <div class="wallet-card" style="margin-bottom:16px">
+        <div class="wallet-balance-label">Available Balance</div>
+        <div class="wallet-balance-amount" id="wallet-page-balance">—</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:8px" id="wallet-page-currency">—</div>
+      </div>
+
+      <div class="wallet-card" style="margin-bottom:16px">
+        <div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:14px">Deposit Funds</div>
+        <label class="wallet-balance-label">Amount</label>
+        <div class="wallet-form-row">
+          <input class="wallet-amount-input" id="deposit-amount" type="number" min="1" placeholder="Enter amount" />
+          <button class="btn btn-primary btn-sm" onclick="handleDeposit()" id="deposit-btn">Deposit</button>
+        </div>
+      </div>
+
+      <div class="wallet-card">
+        <div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:14px">Withdraw Funds</div>
+        <label class="wallet-balance-label">Amount</label>
+        <div class="wallet-form-row">
+          <input class="wallet-amount-input" id="withdraw-amount" type="number" min="1" placeholder="Enter amount" />
+          <button class="btn btn-ghost btn-sm" onclick="handleWithdraw()" id="withdraw-btn">Withdraw</button>
+        </div>
       </div>
     </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px">
-      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.1em">NOTES</div>
-      <div style="margin-top:10px;font-size:13px;color:var(--text);line-height:1.6">All wallet operations are live and synced with your backend. Recent transactions appear below with before/after balances.</div>
+
+    <!-- Right: transaction history -->
+    <div>
+      <div style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:14px">Transaction History</div>
+      <div class="wallet-txn-table-wrap">
+        <div class="wallet-txn-header">
+          <span>Date / Time</span>
+          <span>Type</span>
+          <span>Amount</span>
+          <span>Balance After</span>
+        </div>
+        <div id="wallet-txn-list">
+          <div class="section-empty">Loading transactions…</div>
+        </div>
+      </div>
     </div>
   </div>
-  <div style="padding:14px 24px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:0.1em">RECENT TRANSACTIONS</div>
-  <div id="wallet-tx-list" style="flex:1;overflow:auto"></div>
 </div>
 
 <!-- ══════════════════ STOCK DETAIL PAGE ══════════════════ -->
@@ -1539,9 +1639,16 @@ function formatMoney(value, currency = 'INR') {
   return `${symbol}${n.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 }
 
+// Returns the canonical price-change-percent field from a stock API row.
+// The backend exposes this under different names across endpoints.
+function getStockChgPct(s) {
+  const val = s.change_pct ?? s.day_change_pct ?? null;
+  return val != null ? Number(val) : null;
+}
+
 function setWalletInUi(balance, currency = 'INR') {
   const text = formatMoney(balance, currency);
-  const ids = ['nav-wallet-bal', 'nav-wallet-bal-stocks', 'nav-wallet-bal-orders', 'nav-wallet-bal-wallet', 'detail-available-balance', 'wallet-page-balance'];
+  const ids = ['nav-wallet-bal', 'nav-wallet-bal-stocks', 'nav-wallet-bal-orders', 'nav-wallet-bal-wallet', 'detail-available-balance'];
   ids.forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
@@ -1802,55 +1909,6 @@ async function fetchOrderHistory() {
   return rows;
 }
 
-async function loadOrdersPage() {
-  if (!authState.loggedIn) return;
-  try {
-    const rows = await fetchOrderHistory();
-    renderOrdersPage(rows);
-    await fetchWalletBalance();
-  } catch (err) {
-    showToast(err.message || 'Unable to load orders page', 'error');
-  }
-}
-
-async function loadWalletPage() {
-  if (!authState.loggedIn) return;
-  try {
-    const wallet = await fetchWalletBalance();
-    renderWalletTransactions(wallet.recentTransactions || [], wallet.homeCurrency || authState.user?.homeCurrency || 'INR');
-  } catch (err) {
-    showToast(err.message || 'Unable to load wallet page', 'error');
-  }
-}
-
-async function walletAction(type) {
-  if (!authState.loggedIn) return;
-  const amtEl = document.getElementById('wallet-amount');
-  const amount = Number(amtEl?.value);
-  if (!Number.isFinite(amount) || amount <= 0) {
-    showToast('Enter a valid amount', 'error');
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API}/api/wallet/${type === 'deposit' ? 'deposit' : 'withdraw'}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
-      body: JSON.stringify({ amount }),
-    });
-    const json = await res.json();
-    if (!res.ok) {
-      showToast(getResponseError(json, `Unable to ${type}`), 'error');
-      return;
-    }
-    showToast(`${type === 'deposit' ? 'Deposit' : 'Withdraw'} successful`, 'success');
-    if (amtEl) amtEl.value = '';
-    await Promise.all([loadWalletPage(), loadDashboardData()]);
-  } catch {
-    showToast(`Unable to ${type} right now`, 'error');
-  }
-}
-
 async function loadDashboardData() {
   if (!authState.loggedIn) return;
   setUserAvatar();
@@ -1861,6 +1919,73 @@ async function loadDashboardData() {
   } catch (err) {
     showToast(err.message || 'Unable to load dashboard data', 'error');
   }
+  // Fire and forget — gainers/losers update async after main load
+  fetchTopGainersLosers();
+}
+
+async function fetchTopGainersLosers() {
+  try {
+    // Re-use already-loaded stocks when available, otherwise fetch a batch
+    let stocksWithChg = allStocks.filter(s => s.rawChgPct != null);
+    if (!stocksWithChg.length) {
+      const res = await fetch(`${API}/api/stocks?limit=100&page=1`);
+      if (res.ok) {
+        const json = await res.json();
+        const rows = getResponseData(json)?.stocks || [];
+        stocksWithChg = rows.map(s => ({
+          stockId: s.id,
+          sym: s.symbol,
+          name: s.company_name || s.symbol,
+          price: formatPrice(s.current_price, s.listing_currency),
+          rawChgPct: getStockChgPct(s),
+          chg: getStockChgPct(s) != null ? formatChg(getStockChgPct(s)) : null,
+          up: (getStockChgPct(s) ?? 0) >= 0,
+          exchange: s.exchange || 'NSE',
+        })).filter(s => s.rawChgPct != null);
+      }
+    }
+
+    const gList = document.getElementById('gainers-list');
+    const lList = document.getElementById('losers-list');
+
+    if (!stocksWithChg.length) {
+      // Fallback to hardcoded EXCHANGE_STOCKS data when API has no change data
+      const fallback = Object.entries(EXCHANGE_STOCKS).flatMap(([ex, arr]) =>
+        arr.map(s => ({ ...s, exchange: ex }))
+      );
+      const gainers = fallback.filter(s => s.up).slice(0, 4);
+      const losers  = fallback.filter(s => !s.up).slice(0, 3);
+      if (gList) gList.innerHTML = gainers.map(s => `
+        <div class="watch-row" onclick="showStockDetail('${escapeHtml(s.sym)}','${escapeHtml(s.exchange)}')">
+          <span class="watch-sym">${escapeHtml(s.sym.split('.')[0])}</span>
+          <span class="watch-price">${escapeHtml(s.price)}</span>
+          <span class="watch-chg up">${escapeHtml(s.chg)}</span>
+        </div>`).join('');
+      if (lList) lList.innerHTML = losers.map(s => `
+        <div class="watch-row" onclick="showStockDetail('${escapeHtml(s.sym)}','${escapeHtml(s.exchange)}')">
+          <span class="watch-sym">${escapeHtml(s.sym.split('.')[0])}</span>
+          <span class="watch-price">${escapeHtml(s.price)}</span>
+          <span class="watch-chg down">${escapeHtml(s.chg)}</span>
+        </div>`).join('');
+      return;
+    }
+
+    const sorted = [...stocksWithChg].sort((a, b) => (b.rawChgPct || 0) - (a.rawChgPct || 0));
+    const gainers = sorted.filter(s => s.rawChgPct > 0).slice(0, 5);
+    const losers  = sorted.filter(s => s.rawChgPct < 0).reverse().slice(0, 5);
+
+    const makeRow = (s) => `
+      <div class="watch-row" onclick="showStockDetail('${escapeHtml(s.sym)}','${escapeHtml(s.exchange)}','${escapeHtml(s.stockId || '')}')">
+        <span class="watch-sym">${escapeHtml(s.sym.split('.')[0])}</span>
+        <span class="watch-price">${escapeHtml(s.price)}</span>
+        <span class="watch-chg ${s.up ? 'up' : 'down'}">${escapeHtml(s.chg || '—')}</span>
+      </div>`;
+
+    if (gList) gList.innerHTML = gainers.length ? gainers.map(makeRow).join('') : '<div class="section-empty">No data</div>';
+    if (lList) lList.innerHTML = losers.length  ? losers.map(makeRow).join('')  : '<div class="section-empty">No data</div>';
+  } catch {
+    // Silently leave existing content if we can't fetch
+  }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -1868,7 +1993,7 @@ async function loadDashboardData() {
 // ─────────────────────────────────────────────────────────
 function showPage(page) {
   // Guard protected pages — redirect to auth if not logged in
-  const PROTECTED = ['dashboard', 'stocks', 'orders', 'wallet', 'stock-detail'];
+  const PROTECTED = ['dashboard', 'stocks', 'stock-detail', 'orders', 'wallet'];
   if (PROTECTED.includes(page) && !authState.loggedIn) {
     const savedToken = localStorage.getItem('sx_token');
     const savedUser  = localStorage.getItem('sx_user');
@@ -1899,8 +2024,12 @@ function showPage(page) {
     if (!allStocks.length) fetchRealStocks();
     renderStocksList();
   }
-  if (page === 'orders') loadOrdersPage();
-  if (page === 'wallet') loadWalletPage();
+  if (page === 'orders') {
+    loadOrdersPage();
+  }
+  if (page === 'wallet') {
+    loadWalletPage();
+  }
 }
 
 function showAuth(mode = 'login') {
@@ -1913,8 +2042,165 @@ function goBackFromDetail() {
 }
 
 // ─────────────────────────────────────────────────────────
-// INTRO SPLASH
+// ORDERS PAGE
 // ─────────────────────────────────────────────────────────
+async function loadOrdersPage() {
+  if (!authState.loggedIn) return;
+  // Refresh wallet chip
+  try { await fetchWalletBalance(); } catch {}
+
+  const listEl = document.getElementById('orders-page-list');
+  const countEl = document.getElementById('orders-page-count');
+  if (listEl) listEl.innerHTML = '<div class="section-empty">Loading orders…</div>';
+
+  try {
+    const res = await fetch(`${API}/api/orders/history`, { headers: getAuthHeaders() });
+    const json = await res.json();
+    const payload = getResponseData(json);
+    const rows = payload?.orders || [];
+
+    if (countEl) countEl.textContent = `${rows.length} order${rows.length !== 1 ? 's' : ''}`;
+
+    if (!rows.length) {
+      if (listEl) listEl.innerHTML = '<div class="section-empty">No orders yet — place your first trade!</div>';
+      return;
+    }
+
+    if (listEl) listEl.innerHTML = rows.map((o) => {
+      const side = (o.side || '').toLowerCase();
+      const sym  = (o.symbol || '').split('.')[0];
+      const qty  = Number(o.quantity || 0);
+      const price = Number(o.executed_price || o.limit_price || 0);
+      const total = formatMoney(o.executed_total || qty * price, o.listing_currency);
+      const dateStr = o.created_at ? new Date(o.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+      const status = (o.status || 'COMPLETED').toUpperCase();
+      const statusColor = status === 'COMPLETED' || status === 'FILLED' ? 'var(--green)' : status === 'CANCELLED' ? 'var(--red)' : 'var(--amber)';
+      return `
+        <div class="orders-page-row">
+          <div>
+            <div class="order-page-sym">${escapeHtml(sym)}</div>
+            <div class="order-page-sub">${escapeHtml(o.exchange || '')}</div>
+          </div>
+          <span class="order-type ${side === 'sell' ? 'sell' : 'buy'}">${escapeHtml(side.toUpperCase())}</span>
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">${escapeHtml((o.order_type || 'MARKET').toUpperCase())}</div>
+          <div style="font-family:var(--font-mono);font-size:13px">${qty}</div>
+          <div style="font-family:var(--font-mono);font-size:13px">${price ? formatMoney(price, o.listing_currency) : '—'}</div>
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${escapeHtml(dateStr)}</div>
+          <span style="font-family:var(--font-mono);font-size:10px;font-weight:600;color:${statusColor}">${escapeHtml(status)}</span>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    if (listEl) listEl.innerHTML = '<div class="section-empty">Failed to load orders</div>';
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// WALLET PAGE
+// ─────────────────────────────────────────────────────────
+async function loadWalletPage() {
+  if (!authState.loggedIn) return;
+
+  const balEl = document.getElementById('wallet-page-balance');
+  const curEl = document.getElementById('wallet-page-currency');
+  const txnEl = document.getElementById('wallet-txn-list');
+
+  try {
+    const res = await fetch(`${API}/api/wallet/balance`, { headers: getAuthHeaders() });
+    const json = await res.json();
+    const payload = getResponseData(json);
+    if (res.ok && payload) {
+      const currency = payload.homeCurrency || authState.user?.homeCurrency || 'INR';
+      const balText  = formatMoney(payload.balance, currency);
+      if (balEl) balEl.textContent = balText;
+      if (curEl) curEl.textContent = currency;
+      setWalletInUi(payload.balance, currency);
+    }
+  } catch {}
+
+  // Load transaction history
+  if (txnEl) txnEl.innerHTML = '<div class="section-empty">Loading…</div>';
+  try {
+    const res = await fetch(`${API}/api/wallet/transactions`, { headers: getAuthHeaders() });
+    const json = await res.json();
+    const payload = getResponseData(json);
+    const rows = payload?.transactions || payload || [];
+
+    if (!Array.isArray(rows) || !rows.length) {
+      if (txnEl) txnEl.innerHTML = '<div class="section-empty">No transactions yet</div>';
+      return;
+    }
+
+    if (txnEl) txnEl.innerHTML = rows.map((t) => {
+      const type = (t.type || t.transaction_type || 'trade').toLowerCase();
+      const amount = formatMoney(Math.abs(t.amount), t.currency || 'INR');
+      const balAfter = t.balance_after != null ? formatMoney(t.balance_after, t.currency || 'INR') : '—';
+      const dateStr  = t.created_at ? new Date(t.created_at).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+      const badgeClass = type.includes('deposit') ? 'deposit' : type.includes('withdraw') ? 'withdraw' : 'trade';
+      const label = type.includes('deposit') ? 'DEPOSIT' : type.includes('withdraw') ? 'WITHDRAW' : 'TRADE';
+      return `
+        <div class="wallet-txn-row">
+          <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted)">${escapeHtml(dateStr)}</div>
+          <span class="txn-type-badge ${badgeClass}">${label}</span>
+          <div style="font-family:var(--font-mono);font-size:13px;font-weight:600;color:${badgeClass === 'deposit' ? 'var(--green)' : badgeClass === 'withdraw' ? 'var(--red)' : 'var(--text)'}">${escapeHtml(amount)}</div>
+          <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">${escapeHtml(balAfter)}</div>
+        </div>`;
+    }).join('');
+  } catch {
+    if (txnEl) txnEl.innerHTML = '<div class="section-empty">Failed to load transactions</div>';
+  }
+}
+
+async function handleDeposit() {
+  if (!authState.loggedIn) { showAuth(); return; }
+  const input = document.getElementById('deposit-amount');
+  const amount = parseFloat(input?.value);
+  if (!amount || amount <= 0) { showToast('Enter a valid amount', 'error'); return; }
+  const btn = document.getElementById('deposit-btn');
+  btn.textContent = 'Processing…'; btn.disabled = true;
+  try {
+    const res = await fetch(`${API}/api/wallet/deposit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ amount }),
+    });
+    const json = await res.json();
+    if (!res.ok) { showToast(getResponseError(json, 'Deposit failed'), 'error'); return; }
+    showToast(`✓ Deposited ${formatMoney(amount)} successfully`, 'success');
+    if (input) input.value = '';
+    await loadWalletPage();
+  } catch {
+    showToast('Unable to process deposit', 'error');
+  } finally {
+    btn.textContent = 'Deposit'; btn.disabled = false;
+  }
+}
+
+async function handleWithdraw() {
+  if (!authState.loggedIn) { showAuth(); return; }
+  const input = document.getElementById('withdraw-amount');
+  const amount = parseFloat(input?.value);
+  if (!amount || amount <= 0) { showToast('Enter a valid amount', 'error'); return; }
+  const btn = document.getElementById('withdraw-btn');
+  btn.textContent = 'Processing…'; btn.disabled = true;
+  try {
+    const res = await fetch(`${API}/api/wallet/withdraw`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+      body: JSON.stringify({ amount }),
+    });
+    const json = await res.json();
+    if (!res.ok) { showToast(getResponseError(json, 'Withdrawal failed'), 'error'); return; }
+    showToast(`✓ Withdrew ${formatMoney(amount)} successfully`, 'success');
+    if (input) input.value = '';
+    await loadWalletPage();
+  } catch {
+    showToast('Unable to process withdrawal', 'error');
+  } finally {
+    btn.textContent = 'Withdraw'; btn.disabled = false;
+  }
+}
+
+
 const introStatuses = ['LOADING GLOBE ASSETS...','CONNECTING FEEDS...','CALIBRATING SYNC...','SYSTEM READY ✓'];
 let introIdx = 0;
 const introEl = document.getElementById('intro-status');
@@ -2088,32 +2374,10 @@ function initDashboardGlobe() {
   setTimeout(() => { globeInst.pointOfView({ altitude: 2.2 }); }, 300);
 }
 
-function openExchangeTooltip(exchangeKey, point) {
+async function openExchangeTooltip(exchangeKey, point) {
   const exch = EXCHANGES[exchangeKey];
-  const liveStocks = allStocks
-    .filter((s) => s.exchange === exchangeKey)
-    .map((s) => ({
-      sym: s.sym,
-      name: s.name,
-      price: s.price,
-      chg: stockAnalyticsBySymbol[s.sym] ? formatChg(stockAnalyticsBySymbol[s.sym].pct) : s.chg,
-      up: stockAnalyticsBySymbol[s.sym] ? stockAnalyticsBySymbol[s.sym].pct >= 0 : s.up,
-      stockId: s.stockId,
-    }))
-    .slice(0, 5);
-  const stocks = liveStocks.length ? liveStocks : (EXCHANGE_STOCKS[exchangeKey] || []);
   document.getElementById('exch-name').textContent = exch.label;
   document.getElementById('exch-meta').textContent = exch.meta;
-
-  const list = document.getElementById('exch-stocks');
-  list.innerHTML = stocks.map(s => `
-    <div class="exch-stock-row" onclick="showStockDetail('${s.sym}','${exchangeKey}','${s.stockId || ''}')">
-      <span class="exch-stock-sym">${s.sym.split('.')[0]}</span>
-      <span class="exch-stock-name">${s.name}</span>
-      <span class="exch-stock-price">${s.price}</span>
-      <span class="exch-stock-chg ${s.up?'up':'down'}">${s.chg}</span>
-    </div>
-  `).join('');
 
   const tip = document.getElementById('exchange-tooltip');
   tip.style.display = 'block';
@@ -2125,6 +2389,43 @@ function openExchangeTooltip(exchangeKey, point) {
     globeInst.controls().autoRotate = false;
     globeInst.pointOfView({ lat: point.lat, lng: point.lng, altitude: 2.0 }, 800);
   }
+
+  const list = document.getElementById('exch-stocks');
+  list.innerHTML = '<div class="section-empty" style="padding:16px">Loading…</div>';
+
+  let stocks = [];
+  try {
+    const res = await fetch(`${API}/api/stocks?exchange=${encodeURIComponent(exchangeKey)}&limit=5`);
+    if (res.ok) {
+      const json = await res.json();
+      const rows = getResponseData(json)?.stocks || [];
+      if (rows.length) {
+        stocks = rows.map(s => ({
+          sym: s.symbol,
+          name: s.company_name || s.symbol,
+          price: formatPrice(s.current_price, s.listing_currency),
+          rawChgPct: getStockChgPct(s),
+          chg: getStockChgPct(s) != null ? formatChg(getStockChgPct(s)) : '—',
+          up: (getStockChgPct(s) ?? 0) >= 0,
+          stockId: s.id,
+        }));
+      }
+    }
+  } catch { /* fall through to fallback */ }
+
+  // Fallback to hardcoded EXCHANGE_STOCKS if API returned nothing
+  if (!stocks.length) {
+    stocks = (EXCHANGE_STOCKS[exchangeKey] || []).map(s => ({ ...s, stockId: null }));
+  }
+
+  list.innerHTML = stocks.map(s => `
+    <div class="exch-stock-row" onclick="showStockDetail('${escapeHtml(s.sym)}','${exchangeKey}','${escapeHtml(s.stockId || '')}')">
+      <span class="exch-stock-sym">${escapeHtml(s.sym.split('.')[0])}</span>
+      <span class="exch-stock-name">${escapeHtml(s.name)}</span>
+      <span class="exch-stock-price">${escapeHtml(s.price)}</span>
+      <span class="exch-stock-chg ${s.up ? 'up' : 'down'}">${escapeHtml(s.chg)}</span>
+    </div>
+  `).join('') || '<div class="section-empty" style="padding:16px">No stocks found</div>';
 }
 
 function closeExchangeTooltip() {
@@ -2166,7 +2467,7 @@ function renderStocksList() {
     const analytics = stockAnalyticsBySymbol[s.sym];
     const chgText = analytics ? formatChg(analytics.pct) : s.chg;
     const isUp = analytics ? analytics.pct >= 0 : s.up;
-    const volText = analytics?.volume ? `${(analytics.volume / 1000000).toFixed(2)}M` : randomVol();
+    const volText = formatVolume(analytics?.volume || s.rawVolume);
     const bars = generateMiniSparkBars(isUp);
     return `
     <div class="stock-row" onclick="showStockDetail('${s.sym}','${s.exchange}','${s.stockId || ''}')">
@@ -2197,17 +2498,24 @@ async function fetchRealStocks() {
       const json = await res.json();
       const rows = getResponseData(json)?.stocks || [];
       if (rows.length > 0) {
-        const mapped = rows.map(s => ({
-          stockId: s.id,
-          sym: s.symbol,
-          name: s.company_name || s.symbol,
-          price: formatPrice(s.current_price, s.listing_currency),
-          currency: s.listing_currency,
-          chg: '—',
-          up: true,
-          exchange: s.exchange || 'NSE',
-          sector: s.sector || 'Mixed',
-        }));
+        const mapped = rows.map(s => {
+          const rawChgPct = getStockChgPct(s);
+          const rawVolume = s.volume ?? s.vol ?? null;
+          return {
+            stockId: s.id,
+            sym: s.symbol,
+            name: s.company_name || s.symbol,
+            price: formatPrice(s.current_price, s.listing_currency),
+            chg: rawChgPct != null ? formatChg(rawChgPct) : '—',
+            up: rawChgPct != null ? rawChgPct >= 0 : true,
+            rawChgPct,
+            rawPrice: Number(s.current_price) || 0,
+            rawCurrency: s.listing_currency || 'INR',
+            rawVolume,
+            exchange: s.exchange || 'NSE',
+            sector: s.sector || 'Mixed',
+          };
+        });
         allStocks = mapped;
         renderStocksList();
         hydrateLiveAnalytics();
@@ -2233,9 +2541,13 @@ function formatChg(pct) {
   const sign = pct >= 0 ? '+' : '';
   return `${sign}${Number(pct).toFixed(2)}%`;
 }
-function randomVol() {
-  const v = (Math.random() * 9 + 0.5).toFixed(1);
-  return v + 'M';
+function formatVolume(volume) {
+  const n = Number(volume);
+  if (!Number.isFinite(n) || n <= 0) return '—';
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return String(n);
 }
 function generateMiniSparkBars(isUp) {
   const color = isUp ? '#00e5a0' : '#ff4d6d';
