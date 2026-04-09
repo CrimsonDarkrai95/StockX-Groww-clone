@@ -230,7 +230,8 @@ const getStockBySymbol = async (req, res) => {
   try {
     const stockResult = await pool.query(
       `SELECT id, symbol, company_name, exchange, listing_currency,
-              sector, current_price, is_active, created_at
+              sector, current_price, is_active, created_at,
+              market_cap, pe_ratio, dividend_yield
        FROM stocks
        WHERE symbol = $1`,
       [symbol.toUpperCase()]
