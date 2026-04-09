@@ -7,23 +7,23 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%2300ff88'/><polyline points='4,24 10,16 16,20 22,10 28,14' fill='none' stroke='%23000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>">
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;510;590;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:        #0b0e14;
-  --surface:   #111620;
-  --surface2:  #161c2a;
-  --border:    #1e2535;
+  --bg:        #08090a;
+  --surface:   #0f1011;
+  --surface2:  #191a1b;
+  --border:    #23252a;
   --border-hi: rgba(80,118,238,0.4);
-  --accent:    #5076ee;
-  --accent2:   #3d5cc4;
+  --accent:    #7170ff;
+  --accent2:   #828fff;
   --green:     #00e5a0;
   --red:       #ff4d6d;
   --amber:     #f5a623;
-  --text:      #c9d1e0;
-  --muted:     #556070;
-  --white:     #ffffff;
-  --font-ui:   'Syne', sans-serif;
+  --text:      #f7f8f8;
+  --muted:     #8a8f98;
+  --white:     #f7f8f8;
+  --font-ui:   'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --radius:    6px;
   --radius-lg: 10px;
@@ -37,6 +37,7 @@ html, body {
   width: 100%; height: 100%; overflow: hidden;
   background: var(--bg); color: var(--text);
   font-family: var(--font-ui);
+  font-feature-settings: 'cv01', 'ss03';
 }
 
 /* ────────── SCROLLBAR ────────── */
@@ -102,8 +103,8 @@ html, body {
   content: ''; width: 24px; height: 1px; background: var(--accent);
 }
 .land-title {
-  font-size: clamp(34px, 4.5vw, 58px); font-weight: 800;
-  line-height: 1.08; letter-spacing: -0.03em;
+  font-size: clamp(34px, 4.5vw, 58px); font-weight: 510;
+  line-height: 1.04; letter-spacing: -0.02em;
   margin-bottom: 28px; color: var(--white);
 }
 .land-title .hi { color: var(--accent); }
@@ -194,6 +195,20 @@ html, body {
 .ticker-price { }
 .ticker-change.up   { color: var(--green); }
 .ticker-change.down { color: var(--red); }
+
+#live-ticker-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 20;
+  background: rgba(8,9,10,0.92); border-top: 1px solid var(--border);
+  backdrop-filter: blur(8px); padding: 10px 0; overflow: hidden;
+  pointer-events: none;
+}
+
+#live-ticker-track {
+  display: inline-flex; gap: 48px; white-space: nowrap;
+  animation: ticker-scroll 60s linear infinite;
+}
+
+@keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
 /* ════════════════════════════════════════
    BUTTONS
@@ -368,7 +383,7 @@ html, body {
   flex: 1; position: relative; overflow: hidden;
   background: radial-gradient(ellipse at center, rgba(80,118,238,0.05) 0%, transparent 70%);
 }
-#globe-dashboard { width: 100%; height: 100%; }
+#globe-dashboard { width: 100%; height: 100%; transform: translateX(0); }
 
 .globe-overlay-top {
   position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
@@ -490,7 +505,7 @@ html, body {
 }
 .stock-row:hover { background: var(--surface); }
 .stock-sym-col { }
-.stock-sym-main { font-size: 14px; font-weight: 700; color: var(--white); }
+.stock-sym-main { font-size: 14px; font-weight: 510; color: var(--white); }
 .stock-sym-sub { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 .stock-exchange-badge {
   display: inline-block; padding: 2px 7px; border-radius: 3px;
@@ -498,7 +513,7 @@ html, body {
   background: rgba(80,118,238,0.1); color: var(--accent); border: 1px solid rgba(80,118,238,0.2);
   margin-left: 8px;
 }
-.stock-price { font-family: var(--font-mono); font-size: 14px; color: var(--text); font-weight: 500; }
+.stock-price { font-family: var(--font-mono); font-size: 14px; color: var(--text); font-weight: 400; }
 .stock-change { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
 .stock-change.up { color: var(--green); }
 .stock-change.down { color: var(--red); }
@@ -1087,6 +1102,11 @@ html, body {
       </div>
     </div>
   </div>
+
+  <!-- LIVE TICKER BAR -->
+  <div id="live-ticker-bar">
+    <div id="live-ticker-track"></div>
+  </div>
 </div>
 
 <!-- ══════════════════ STOCKS LIST PAGE ══════════════════ -->
@@ -1371,6 +1391,7 @@ let stocksTotalFromServer = 0;
 // Refresh intervals
 let dashboardRefreshInterval = null;
 let detailRefreshInterval = null;
+let liveTickerInterval = null;
 
 // Central fetch wrapper — auto-logout on 401
 async function apiFetch(url, options = {}) {
@@ -1485,6 +1506,47 @@ function escapeHtml(val) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+async function initLiveTicker() {
+  try {
+    const [nseRes, nyseRes] = await Promise.all([
+      apiFetch(`${API}/api/stocks?limit=30&exchange=NSE`, { headers: getAuthHeaders() }),
+      apiFetch(`${API}/api/stocks?limit=20&exchange=NYSE`, { headers: getAuthHeaders() }),
+    ]);
+    const [nseJson, nyseJson] = await Promise.all([nseRes.json(), nyseRes.json()]);
+    const nseRows = getResponseData(nseJson)?.stocks || [];
+    const nyseRows = getResponseData(nyseJson)?.stocks || [];
+    const combined = [...nseRows, ...nyseRows].filter((s) => s.current_price != null);
+    if (!combined.length) return;
+
+    const items = combined.map((s) => {
+      const currency = s.listing_currency === 'INR' ? '₹'
+        : s.listing_currency === 'USD' ? '$'
+        : s.listing_currency === 'GBP' ? '£'
+        : s.listing_currency === 'SGD' ? 'S$'
+        : s.listing_currency === 'HKD' ? 'HK$'
+        : s.listing_currency === 'JPY' ? '¥' : '';
+      const price = `${currency}${Number(s.current_price).toFixed(2)}`;
+      return `
+        <span style="display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--muted)">
+          <span style="color:var(--text);font-weight:600">${escapeHtml((s.symbol || '').split('.')[0])}</span>
+          <span>${price}</span>
+        </span>
+      `;
+    }).join('');
+
+    const track = document.getElementById('live-ticker-track');
+    if (track) track.innerHTML = items + items;
+  } catch {
+    return;
+  }
+}
+
+function startLiveTicker() {
+  if (liveTickerInterval) clearInterval(liveTickerInterval);
+  initLiveTicker();
+  liveTickerInterval = setInterval(initLiveTicker, 30000);
 }
 
 function formatMoney(value, currency = 'INR') {
@@ -1915,6 +1977,7 @@ function showPage(page) {
     // Clear any existing interval and start fresh
     if (dashboardRefreshInterval) clearInterval(dashboardRefreshInterval);
     loadDashboardData();
+    startLiveTicker();
     dashboardRefreshInterval = setInterval(() => {
       if (authState.loggedIn) loadDashboardData();
     }, 10000);
@@ -1922,6 +1985,10 @@ function showPage(page) {
   if (page !== 'dashboard' && dashboardRefreshInterval) {
     clearInterval(dashboardRefreshInterval);
     dashboardRefreshInterval = null;
+  }
+  if (page !== 'dashboard' && liveTickerInterval) {
+    clearInterval(liveTickerInterval);
+    liveTickerInterval = null;
   }
   if (page === 'stocks') {
     if (!allStocks.length) fetchRealStocks();
