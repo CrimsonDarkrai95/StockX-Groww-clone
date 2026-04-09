@@ -2423,6 +2423,10 @@ async function showStockDetail(symbol, exchange, stockId = null) {
   document.getElementById('m-low').textContent = '—';
   document.getElementById('m-vol').textContent = '—';
   document.getElementById('m-range').textContent = '—';
+  document.getElementById('comp-sector').textContent = '—';
+  document.getElementById('comp-mcap').textContent = '—';
+  document.getElementById('comp-pe').textContent = '—';
+  document.getElementById('comp-div').textContent = '—';
   document.getElementById('trade-submit-btn').textContent = `${currentTradeTab === 'buy' ? 'Buy' : 'Sell'} ${sym}`;
 
   showPage('stock-detail');
@@ -2470,6 +2474,22 @@ async function refreshDetailPrice(symbol, exchange) {
 
     if (stock?.sector) document.getElementById('comp-sector').textContent = stock.sector;
 
+    const capValue = Number(stock?.market_cap);
+    if (Number.isFinite(capValue) && capValue > 0) {
+      const capText = new Intl.NumberFormat('en-IN', { notation: 'compact', maximumFractionDigits: 2 }).format(capValue);
+      document.getElementById('comp-mcap').textContent = `${currentDetailCurrency === 'INR' ? '₹' : currentDetailCurrency === 'USD' ? '$' : currentDetailCurrency === 'GBP' ? '£' : currentDetailCurrency === 'SGD' ? 'S$' : currentDetailCurrency === 'HKD' ? 'HK$' : currentDetailCurrency === 'JPY' ? '¥' : ''}${capText}`;
+    }
+
+    const peValue = Number(stock?.pe_ratio);
+    if (Number.isFinite(peValue) && peValue > 0) {
+      document.getElementById('comp-pe').textContent = `${peValue.toFixed(2)}x`;
+    }
+
+    const divValue = Number(stock?.dividend_yield);
+    if (Number.isFinite(divValue) && divValue >= 0) {
+      document.getElementById('comp-div').textContent = `${divValue.toFixed(2)}%`;
+    }
+
     if (history.length) {
       currentChartHistory = history.map((h) => ({
         date: h.date,
@@ -2487,10 +2507,17 @@ async function refreshDetailPrice(symbol, exchange) {
       if (latest) {
         document.getElementById('m-high').textContent = formatMoney(latest.high, currentDetailCurrency);
         document.getElementById('m-low').textContent = formatMoney(latest.low, currentDetailCurrency);
-        document.getElementById('m-vol').textContent = `${(latest.volume / 1000000).toFixed(2)}M`;
+        const latestVol = Number(latest.volume);
+        document.getElementById('m-vol').textContent = Number.isFinite(latestVol) && latestVol > 0
+          ? `${(latestVol / 1000000).toFixed(2)}M`
+          : '—';
       }
       if (highs.length && lows.length) {
-        document.getElementById('m-range').textContent = `${formatMoney(Math.min(...lows), currentDetailCurrency)} — ${formatMoney(Math.max(...highs), currentDetailCurrency)}`;
+        const minPrice = Math.min(...lows);
+        const maxPrice = Math.max(...highs);
+        document.getElementById('m-range').textContent = Number.isFinite(minPrice) && Number.isFinite(maxPrice) && maxPrice > minPrice
+          ? `${formatMoney(minPrice, currentDetailCurrency)} — ${formatMoney(maxPrice, currentDetailCurrency)}`
+          : '—';
       }
     }
 
